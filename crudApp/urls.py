@@ -1,7 +1,6 @@
-# crudApp/urls.py
 from django.urls import path
-from .views import lista_usuarios  # Asegúrate de que estás importando la vista correctamente
+from . import views
 
 urlpatterns = [
-    path('', lista_usuarios, name='lista_usuarios.html'),  # Esto manejará la ruta 'usuarios/'
+    path('home/', views.home, name='home'),  # La URL base ahora apunta a la vista 'home'
 ]
