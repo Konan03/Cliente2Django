@@ -6,8 +6,6 @@ import requests
 from django.shortcuts import render
 from .models import Usuario
 
-
-
 @never_cache
 def lista_usuarios(request):
     response = requests.get('http://localhost:8080/usuarios')
