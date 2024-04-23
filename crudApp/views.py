@@ -2,7 +2,9 @@ from django.http import HttpResponse
 from django.views.decorators.cache import never_cache
 import requests
 from django.views import View
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.contrib import messages  # Importa el módulo de mensajes
+from .forms import UsuarioForm
 
 
 @never_cache
@@ -16,7 +18,7 @@ def lista_usuarios(request):
 
 from django.shortcuts import render
 
-@never_cache
+
 def home(request):
     # Aquí puedes agregar cualquier contexto que desees pasar a tu plantilla
     context = {
@@ -28,7 +30,7 @@ def home(request):
 
 class UserView(View):
     def get(self, request):
-        return render(request, 'usuario.html')
+        return render(request, 'crudApp/usuario.html')
 
 class VideogameView(View):
     def get(self, request):
@@ -37,3 +39,16 @@ class VideogameView(View):
 class AboutView(View):
     def get(self, request):
         return render(request, 'about.html')
+
+
+def add_usuario(request):
+    if request.method == 'POST':
+        form = UsuarioForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'El usuario se ha creado con éxito.')  # Añade un mensaje de éxito
+            return redirect('add_usuario')  # Redirige a la misma página para limpiar el formulario
+    else:
+        form = UsuarioForm()
+    return render(request, 'crudApp/CrudUsuario/CreateU.html', {'form': form})
+

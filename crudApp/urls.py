@@ -1,11 +1,14 @@
 from django.urls import path
-from . import views
-from .views import UserView, VideogameView, AboutView  # Importar las vistas desde el módulo actual
+from .views import lista_usuarios, home, UserView, VideogameView, AboutView
+from .views import add_usuario
+
+
 
 urlpatterns = [
-    path('', views.home, name='home'),  # La URL base ahora apunta a la vista 'home'
-    path('usuarios/', views.lista_usuarios, name='lista_usuarios'),
-    path('usuario/', UserView.as_view(), name='usuario'),  # Usar las vistas importadas directamente
-    path('videojuego/', VideogameView.as_view(), name='videojuego'),
-    path('about/', AboutView.as_view(), name='about'),
+    path('', home, name='home'),  # La URL base para la página de inicio
+    path('usuarios/', lista_usuarios, name='lista_usuarios'),  # Para mostrar la lista de usuarios
+    path('usuario/', UserView.as_view(), name='usuario'),  # Para la página general de usuario donde estarán los botones de CRUD
+    path('videojuego/', VideogameView.as_view(), name='videojuego'),  # Para la sección de videojuegos
+    path('about/', AboutView.as_view(), name='about'),  # Para la página de "Acerca de"
+    path('usuario/crear/', add_usuario, name='add_usuario'),
 ]
