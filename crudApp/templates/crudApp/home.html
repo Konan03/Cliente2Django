@@ -1,12 +1,16 @@
-<!-- crudApp/templates/crudApp/home.html -->
+<!-- home.html -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Mi Página de Inicio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio</title>
 </head>
 <body>
-    <h1>Bienvenido a Mi Aplicación!</h1>
-    <p>Esta es la página de inicio.</p>
+<!-- Incluir la barra de navegación -->
+{% include 'crudApp/navbar.html' %}
+
+<h1>Bienvenido</h1>
+<!-- Contenido de tu página de inicio aquí -->
 </body>
 </html>
