@@ -1,5 +1,6 @@
 from django.urls import path
-from .views import lista_usuarios, home, UserView, VideogameView, AboutView
+from .views import lista_usuarios, home, UserView, VideogameView, AboutView, delete_usuario, view_usuario, \
+    update_usuario
 from .views import add_usuario
 
 
@@ -11,4 +12,7 @@ urlpatterns = [
     path('videojuego/', VideogameView.as_view(), name='videojuego'),  # Para la sección de videojuegos
     path('about/', AboutView.as_view(), name='about'),  # Para la página de "Acerca de"
     path('usuario/crear/', add_usuario, name='add_usuario'),
+    path('usuario/eliminar/', delete_usuario, name='delete_usuario'),
+    path('usuario/verUsuarios/', view_usuario, name='view_usuario'),
+    path('usuario/ActualizarUsuarios/', update_usuario, name='update_usuario'),
 ]

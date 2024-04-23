@@ -2,9 +2,69 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Ver Usuarios</title>
 </head>
 <body>
+
+{% extends 'crudApp/home.html' %}
+{% block title %}Usuarios{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-3 d-flex justify-content-center">Lista de Usuarios</h1>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Nombre</th>
+                    <th>Estatura</th>
+                    <th>Fecha de Nacimiento</th>
+                    <th>Premium</th>
+                    <th>Videojuegos</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for usuario in usuarios %}
+                <tr>
+                    <td>{{ usuario.id }}</td>
+                    <td>{{ usuario.nombre }}</td>
+                    <td>{{ usuario.estatura }}</td>
+                    <td>{{ usuario.fechaNacimiento }}</td>
+                    <td>{{ usuario.es_premium|yesno:"si,no" }}</td>
+                    <td>
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#videojuegosModal{{ usuario.id }}">
+                            Ver Videojuegos
+                        </button>
+                        <!-- Modal -->
+                        <div class="modal fade" id="videojuegosModal{{ usuario.id }}" tabindex="-1" role="dialog" aria-labelledby="videojuegosModalLabel{{ usuario.id }}" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="videojuegosModalLabel{{ usuario.id }}">Videojuegos de {{ usuario.nombre }}</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <!-- Aquí colocas la lista de videojuegos asociados al usuario -->
+                                        <!-- Puedes mostrar los videojuegos de cualquier forma que desees -->
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    <a href="{% url 'usuario' %}" class="btn btn-secondary mx-2">Atrás</a>
+    </div>
+</div>
+{% endblock %}
+
 
 </body>
 </html>
