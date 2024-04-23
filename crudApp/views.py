@@ -1,9 +1,10 @@
 from django.http import HttpResponse
 from django.views.decorators.cache import never_cache
 import requests
-from django.shortcuts import render
-from .models import Usuario
 from django.views import View
+from django.shortcuts import render
+
+
 @never_cache
 def lista_usuarios(request):
     response = requests.get('http://localhost:8080/usuarios')
