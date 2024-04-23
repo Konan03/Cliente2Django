@@ -1,10 +1,7 @@
-# Cliente2Django/urls.py
-from django.contrib import admin
-from django.urls import path, include
-from crudApp import views  # Importa la vista
+# crudApp/urls.py
+from django.urls import path
+from .views import lista_usuarios  # Asegúrate de que estás importando la vista correctamente
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('usuarios/', include('crudApp.urls')),  # Incluye las URLs de la aplicación crudApp
-    path('', views.lista_usuarios, name='home'),  # Redirige la ruta raíz directamente a la vista lista_usuarios
+    path('', lista_usuarios, name='lista_usuarios.html'),  # Esto manejará la ruta 'usuarios/'
 ]
