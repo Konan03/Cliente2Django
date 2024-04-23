@@ -6,15 +6,5 @@
 </head>
 <body>
     <h1>Usuarios</h1>
-    <ul>
-        {% for usuario in usuarios %}
-        <li>{{ usuario.nombre }} - Estatura: {{ usuario.estatura }} m - Premium: {{ usuario.es_premium }}</li>
-        <ul>
-            {% for videojuego in usuario.videojuegos %}
-            <li>{{ videojuego.nombre }} - Precio: {{ videojuego.precio }}€</li>
-            {% endfor %}
-        </ul>
-        {% endfor %}
-    </ul>
 </body>
 </html>

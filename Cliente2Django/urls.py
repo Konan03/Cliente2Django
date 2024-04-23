@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 """
 URL configuration for Cliente2Django project.
 
@@ -24,3 +25,12 @@ urlpatterns = [
     path('', include('crudApp.urls')),
 ]
 
+=======
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.home, name='home'),  # La URL base ahora apunta a la vista 'home'
+    path('usuarios/', views.lista_usuarios, name='lista_usuarios'),
+]
+>>>>>>> 06b1a376af08a6721e7b7d4a4a90177d4238fbfe
