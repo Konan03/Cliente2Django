@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Buscar Videojuegos</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+    <h1>Buscar Videojuegos</h1>
+    <form action="" method="GET">
+        <div class="form-group">
+            <label for="usuario_id">ID del Usuario:</label>
+            <input type="number" class="form-control" id="usuario_id" name="usuario_id" required>
+        </div>
+        <div class="form-group">
+            <label for="id">ID del Videojuego:</label>
+            <input type="number" class="form-control" id="id" name="id">
+        </div>
+        <div class="form-group">
+            <label for="nombre">Nombre:</label>
+            <input type="text" class="form-control" id="nombre" name="nombre">
+        </div>
+        <div class="form-group">
+            <label for="precio">Precio:</label>
+            <input type="number" class="form-control" id="precio" name="precio" step="0.01">
+        </div>
+        <div class="form-group">
+            <label for="multijugador">Multijugador:</label>
+            <select class="form-control" id="multijugador" name="multijugador">
+                <option value="">Seleccione...</option>
+                <option value="true">Sí</option>
+                <option value="false">No</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Buscar</button>
+    </form>
+    <h2>Resultados:</h2>
+    {% if videojuegos %}
+        <ul class="list-group mt-3">
+            {% for videojuego in videojuegos %}
+                <li class="list-group-item">
+                    {{ videojuego.nombre }} - ${{ videojuego.precio }} - {% if videojuego.multijugador %}Multijugador{% else %}Individual{% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No se encontraron videojuegos.</p>
+    {% endif %}
+</div>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script>
+</body>
+</html>

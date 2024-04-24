@@ -2,7 +2,7 @@ from django.urls import path
 from .views import  home, UserView, VideogameView, AboutView, delete_usuario, view_usuario, \
     update_usuario
 from .views import add_usuario
-from .views import seleccionar_usuario,add_videojuego,read_videojuegos,update_videojuego, delete_videojuego
+from .views import seleccionar_usuario,add_videojuego,read_videojuegos,update_videojuego, delete_videojuego, search_videojuegos
 
 urlpatterns = [
     path('', home, name='home'),  # La URL base para la página de inicio
@@ -15,6 +15,7 @@ urlpatterns = [
     path('videojuego/read/', read_videojuegos, name='read_videojuegos'),
     path('videojuego/update/', update_videojuego, name='update_videojuego'),
     path('videojuego/delete/', delete_videojuego, name='delete_videojuego'),
+    path('videojuego/search/', search_videojuegos, name='search_videojuegos'),
     path('usuario/eliminar/', delete_usuario, name='delete_usuario'),
     path('usuario/verUsuarios/', view_usuario, name='view_usuario'),
     path('usuario/ActualizarUsuarios/', update_usuario, name='update_usuario'),
