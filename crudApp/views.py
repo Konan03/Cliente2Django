@@ -84,41 +84,63 @@ def view_usuario(request):
         return HttpResponse('Error al obtener los usuarios: ' + str(response.status_code))
 
 
-def update_usuario(request):
-    if request.method == 'POST':
-        form = UsuarioForm(request.POST)
-        if form.is_valid():
-            usuario_id = form.cleaned_data['id']
-            form_data = form.cleaned_data
-            # Eliminamos el id del formulario para que no se incluya al actualizar
-            del form_data['id']
-            response = requests.put(f'http://localhost:8080/usuarios/{usuario_id}', json=form_data,
-                                    headers={'Content-Type': 'application/json'})
-            if response.status_code == 200:
-                messages.success(request, 'El usuario se ha actualizado con éxito')
-                return redirect('update_usuario')
-            else:
-                messages.error(request, 'Error al actualizar el usuario en el backend de Spring Boot')
-    else:
-        # Obtener el ID del usuario desde la solicitud GET
-        usuario_id = request.GET.get('search')
-        if usuario_id:
-            print(f'Búsqueda de usuario con ID: {usuario_id}')
-            # Realizar una solicitud GET al backend de Spring Boot para obtener los datos del usuario
-            response = requests.get(f'http://localhost:8080/usuarios/{usuario_id}')
-            if response.status_code == 200:
-                # Si la solicitud fue exitosa, obtener los datos del usuario del cuerpo de la respuesta JSON
-                usuario_data = response.json()
-                print(usuario_data)  # Agregar esta línea para verificar los datos del usuario
-                # Inicializar el formulario con los datos del usuario y pasarlos al contexto
-                form = UsuarioForm(initial=usuario_data)
-                return render(request, 'crudApp/CrudUsuario/UpdateU.html', {'form': form, 'usuario': usuario_data})
-            else:
-                messages.error(request, 'Error al obtener los datos del usuario del backend de Spring Boot')
-                return redirect('update_usuario')
-        else:
-            form = UsuarioForm()
-    return render(request, 'crudApp/CrudUsuario/UpdateU.html', {'form': form})
+import requests
+from django.http import JsonResponse
 
+import requests
+from django.shortcuts import render
+from django.http import JsonResponse
+
+import requests
+from django.http import JsonResponse
+
+
+def update_usuario(request):
+    try:
+        if request.method == 'POST':
+            form = UsuarioForm(request.POST)
+            if form.is_valid():
+                usuario_id = form.cleaned_data['id']
+                form_data = form.cleaned_data
+                form_data['fechaNacimiento'] = form_data['fechaNacimiento'].strftime('%Y-%m-%dT%H:%M')
+
+                print("Datos enviados a Spring Boot:", form_data)
+                # Eliminamos el id del formulario para que no se incluya al actualizar
+                del form_data['id']
+                response = requests.put(f'http://localhost:8080/usuarios/{usuario_id}', json=form_data,
+                                        headers={'Content-Type': 'application/json'})
+                if response.status_code == 200:
+                    messages.success(request, 'El usuario se ha actualizado con éxito')
+                    return redirect('update_usuario')
+                else:
+                    messages.error(request, f'Error al actualizar el usuario en el backend de Spring Boot. '
+                                              f'Código de estado: {response.status_code}')
+        else:
+            # Obtener el ID del usuario desde la solicitud GET
+            usuario_id = request.GET.get('id')
+            if usuario_id:
+                print(f'Búsqueda de usuario con ID: {usuario_id}')
+                # Realizar una solicitud GET al backend de Spring Boot para obtener los datos del usuario
+                response = requests.get(f'http://localhost:8080/usuarios', params={'id': usuario_id})
+
+                if response.status_code == 200:
+                    # Si la solicitud fue exitosa, obtener los datos del usuario del cuerpo de la respuesta JSON
+                    usuario_data = response.json()
+                    print(usuario_data)  # Agregar esta línea para verificar los datos del usuario
+                    # Inicializar el formulario con los datos del usuario y pasarlos al contexto
+                    form = UsuarioForm(initial=usuario_data)
+                    return render(request, 'crudApp/CrudUsuario/UpdateU.html', {'form': form, 'usuario': usuario_data})
+                else:
+                    messages.error(request, f'Error al obtener los datos del usuario del backend de Spring Boot. '
+                                              f'Código de estado: {response.status_code}')
+                    return redirect('update_usuario')
+            else:
+                form = UsuarioForm()
+    except Exception as e:
+        messages.error(request, f'Ocurrió un error: {e}')
+
+    # Si hubo algún error o si no se proporcionó un ID de usuario válido, simplemente renderizamos el formulario vacío
+    form = UsuarioForm()
+    return render(request, 'crudApp/CrudUsuario/UpdateU.html', {'form': form})
 
 

@@ -5,10 +5,10 @@ class UsuarioForm(forms.ModelForm):
     id = forms.IntegerField(label='ID', required=False)
     class Meta:
         model = Usuario
-        fields = ['id','nombre', 'estatura', 'fechaNacimiento', 'es_premium']  # Asumiendo que manejas videojuegos de otra manera
+        fields = ['id','nombre', 'estatura', 'fechaNacimiento', 'esPremium']  # Asumiendo que manejas videojuegos de otra manera
         widgets = {
             'fechaNacimiento': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
-            'es_premium': forms.CheckboxInput(),
+            'esPremium': forms.CheckboxInput(),
         }
 
     def __init__(self, *args, **kwargs):
