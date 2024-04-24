@@ -1,0 +1,9 @@
+<!-- seleccionar_usuario.html -->
+<h1>Selecciona un Usuario</h1>
+<ul>
+    {% for usuario in usuarios %}
+        <li>
+            <a href="{% url 'add_videojuego' usuario.id %}">{{ usuario.nombre }}</a>
+        </li>
+    {% endfor %}
+</ul>

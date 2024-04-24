@@ -81,6 +81,19 @@ DATABASES = {
     }
 }
 
+class DisableMigrations:
+    def __contains__(self, item):
+        return True
+
+    def __getitem__(self, item):
+        return 'notmigrations'
+
+MIGRATION_MODULES = {}
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8080",  # Reemplaza esto con la URL de tu servidor externo
+]
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
