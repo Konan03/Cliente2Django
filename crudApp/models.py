@@ -7,8 +7,8 @@ import datetime
 class Usuario(models.Model):
     nombre = models.CharField(max_length=100)
     estatura = models.FloatField()
-    fecha_nacimiento = models.DateTimeField(default=datetime.datetime.now)
-    es_premium = models.BooleanField(default=False)
+    fechaNacimiento = models.DateTimeField(default=datetime.datetime.now)
+    esPremium = models.BooleanField(default=False)
 
     def __str__(self):
         return self.nombre
