@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <title>Ver Usuarios</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
 
 {% extends 'crudApp/home.html' %}
 {% block title %}Usuarios{% endblock %}
 {% block content %}
-<div class="container mt-4">
-    <h1 class="mb-3 d-flex justify-content-center">Lista de Usuarios</h1>
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
+    <div class="container mt-4">
+        <h1 class="mb-3 d-flex justify-content-center">Lista de Usuarios</h1>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
                 <tr>
                     <th>Id</th>
                     <th>Nombre</th>
@@ -22,49 +23,75 @@
                     <th>Premium</th>
                     <th>Videojuegos</th>
                 </tr>
-            </thead>
-            <tbody>
+                </thead>
+                <tbody>
                 {% for usuario in usuarios %}
-                <tr>
-                    <td>{{ usuario.id }}</td>
-                    <td>{{ usuario.nombre }}</td>
-                    <td>{{ usuario.estatura }}</td>
-                    <td>{{ usuario.fechaNacimiento }}</td>
-                    <td>{{ usuario.es_premium|yesno:"si,no" }}</td>
-                    <td>
-                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#videojuegosModal{{ usuario.id }}">
-                            Ver Videojuegos
-                        </button>
-                        <!-- Modal -->
-                        <div class="modal fade" id="videojuegosModal{{ usuario.id }}" tabindex="-1" role="dialog" aria-labelledby="videojuegosModalLabel{{ usuario.id }}" aria-hidden="true">
-                            <div class="modal-dialog" role="document">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="videojuegosModalLabel{{ usuario.id }}">Videojuegos de {{ usuario.nombre }}</h5>
-                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <!-- Aquí colocas la lista de videojuegos asociados al usuario -->
-                                        <!-- Puedes mostrar los videojuegos de cualquier forma que desees -->
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    <tr>
+                        <td>{{ usuario.id }}</td>
+                        <td>{{ usuario.nombre }}</td>
+                        <td>{{ usuario.estatura }}</td>
+                        <td>{{ usuario.fechaNacimiento }}</td>
+                        <td>{{ usuario.esPremium|yesno:"si,no" }}</td>
+                        <td>
+                            {% if usuario.videojuegos %}
+                                <button type="button" class="btn btn-primary" data-toggle="modal"
+                                        data-target="#juegosModal{{ usuario.id }}">
+                                    Juegos
+                                </button>
+
+                                <div class="modal fade" id="juegosModal{{ usuario.id }}" tabindex="-1" role="dialog"
+                                     aria-labelledby="juegosModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"
+                                         role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="juegosModalLabel">Videojuegos
+                                                    de {{ usuario.nombre }}</h5>
+                                                <button type="button" class="close" data-dismiss="modal"
+                                                        aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <!-- Aquí se listarían los juegos -->
+                                                {% for juego in usuario.videojuegos %}
+                                                    <p>{{ juego.nombre }}</p>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                                    Cerrar
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
+                            {% else %}
+                                <p>No hay juegos asignados</p>
+                            {% endif %}
+                        </td>
+                    </tr>
                 {% endfor %}
-            </tbody>
-        </table>
-    <a href="{% url 'usuario' %}" class="btn btn-secondary mx-2">Atrás</a>
-    </div>
-</div>
-{% endblock %}
 
+
+                </tbody>
+            </table>
+            <a href="{% url 'usuario' %}" class="btn btn-secondary mx-2">Atrás</a>
+        </div>
+    </div>
+{% endblock %}
+<!-- jQuery completa -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script>
+<script>$(document).ready(function () {
+    $('.btn-primary').click(function () {
+        var target = $(this).attr('data-target');
+        $(target).modal('show');
+    });
+});
+</script>
 
 </body>
 </html>
