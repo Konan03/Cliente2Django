@@ -5,6 +5,7 @@ from .views import seleccionar_usuario,add_videojuego,read_videojuegos,update_vi
 
 
 
+
 urlpatterns = [
     path('', home, name='home'),  # La URL base para la página de inicio
     path('usuarios/', lista_usuarios, name='lista_usuarios'),  # Para mostrar la lista de usuarios

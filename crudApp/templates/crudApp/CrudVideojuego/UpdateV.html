@@ -1,31 +1,55 @@
+<!-- Front (update_videojuego.html) -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Actualizar Videojuego</title>
-    <!-- Enlace al archivo CSS para estilos personalizados -->
-    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
 <div class="container mt-4">
     <h1>Actualizar Videojuego</h1>
 
-    <!-- Formulario de búsqueda y actualización -->
     <form method="get" action="{% url 'update_videojuego' %}" class="form-inline mb-4">
-        <input class="form-control mr-2" type="search" name="videojuego_id" placeholder="ID del videojuego" required>
-        <button class="btn btn-outline-primary" type="submit">Buscar</button>
+        <input class="form-control mr-2" type="text" name="usuario_id" placeholder="ID del usuario" required>
+        <button class="btn btn-primary" type="submit">Buscar Usuario</button>
     </form>
 
-    {% if form %}
-        <!-- Formulario de actualización -->
-        <form method="post" action="{% url 'update_videojuego' %}" class="mb-4">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn btn-primary">Actualizar</button>
-        </form>
+    {% if usuario %}
+        <div class="user-info">
+            <h2>Usuario: {{ usuario.nombre }}</h2>
+        </div>
+
+        {% if videojuegos %}
+            <form method="post" action="{% url 'update_videojuego' %}">
+                {% csrf_token %}
+                <input type="hidden" name="usuario_id" value="{{ usuario_id }}">
+                <label for="videojuego_id">Seleccione un videojuego para actualizar:</label>
+                <select name="videojuego_id" id="videojuego_id" class="form-control mb-3">
+                    {% for videojuego in videojuegos %}
+                        <option value="{{ videojuego.id }}">{{ videojuego.nombre }}</option>
+                    {% endfor %}
+                </select>
+                {% if form %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-success">Actualizar</button>
+                {% endif %}
+            </form>
+        {% else %}
+            <p>No se encontraron videojuegos para este usuario.</p>
+        {% endif %}
+    {% else %}
+        <p>Por favor, ingrese un ID de usuario para buscar.</p>
     {% endif %}
 </div>
+
+<script>
+    document.getElementById('videojuego_id').addEventListener('change', function() {
+        var selectedGameId = this.value;
+        var usuarioId = document.querySelector('[name="usuario_id"]').value;
+        var newUrl = "{% url 'update_videojuego' %}?usuario_id=" + usuarioId + "&videojuego_id=" + selectedGameId;
+        window.location.href = newUrl;
+    });
+</script>
 
 </body>
 </html>

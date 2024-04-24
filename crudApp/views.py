@@ -64,29 +64,6 @@ def seleccionar_usuario(request):
         return render(request, 'crudApp/seleccionar_usuario.html', {'usuarios': usuarios})
     return render(request, 'error.html', {'mensaje': 'No se pudieron cargar los usuarios.'})
 
-def buscar_usuarioA(request):
-    if request.method == 'POST':
-        usuario_id = request.POST.get('usuario_id')
-        try:
-            usuario = Usuario.objects.get(pk=usuario_id)
-            juegos_usuario = usuario.videojuego_set.all()
-            return render(request, 'crudApp/lista_videojuegosA.html', {'usuario': usuario, 'juegos_usuario': juegos_usuario})
-        except Usuario.DoesNotExist:
-            error_message = "El usuario con el ID proporcionado no existe."
-            return render(request, 'crudApp/buscar_usuarioD.html', {'error_message': error_message})
-    return render(request, 'crudApp/buscar_usuarioD.html')
-
-def buscar_usuarioD(request):
-    if request.method == 'POST':
-        usuario_id = request.POST.get('usuario_id')
-        try:
-            usuario = Usuario.objects.get(pk=usuario_id)
-            juegos_usuario = usuario.videojuego_set.all()
-            return render(request, 'crudApp/lista_videojuegosD.html', {'usuario': usuario, 'juegos_usuario': juegos_usuario})
-        except Usuario.DoesNotExist:
-            error_message = "El usuario con el ID proporcionado no existe."
-            return render(request, 'crudApp/buscar_usuarioD.html', {'error_message': error_message})
-    return render(request, 'crudApp/buscar_usuarioD.html')
 
 def add_videojuego(request, usuario_id):
     if request.method == 'POST':
@@ -128,37 +105,50 @@ def read_videojuegos(request):
     else:
         return HttpResponse('No se pudo obtener los videojuegos', status=response.status_code)
 
-def update_videojuego(request):
-    # Verificar si se está buscando un videojuego por ID para cargar el formulario
-    if request.method == 'GET' and 'videojuego_id' in request.GET:
-        videojuego_id = request.GET['videojuego_id']
-        response = requests.get(f'http://localhost:8080/videojuegos/{videojuego_id}')
-        if response.ok:
-            videojuego_data = response.json()
-            form = VideojuegoForm(initial=videojuego_data)
-            return render(request, 'crudApp/CrudVideojuego/UpdateV.html', {
-                'form': form,
-                'videojuego_id': videojuego_id
-            })
-        else:
-            messages.error(request, 'Videojuego no encontrado.')
-            return redirect('update_videojuego')
+# Vista corregida
+# views.py
 
-    # Procesar el formulario actualizado y enviar una solicitud PUT a la API
-    elif request.method == 'POST':
-        form = VideojuegoForm(request.POST)
-        videojuego_id = request.POST.get('videojuego_id')
-        if form.is_valid():
-            data = form.cleaned_data
-            response = requests.put(f'http://localhost:8080/videojuegos/{videojuego_id}', json=data)
-            if response.status_code == 200 or response.status_code == 204:  # Asumiendo que 200 o 204 indican éxito
-                messages.success(request, 'Videojuego actualizado con éxito.')
-            else:
-                messages.error(request, f'Error al actualizar el videojuego: {response.text}')
-            return redirect('update_videojuego')
-        else:
-            messages.error(request, 'Información del formulario no válida.')
-            return render(request, 'crudApp/CrudVideojuego/UpdateV.html', {'form': form, 'videojuego_id': videojuego_id})
-    else:
-        # Si no es GET con videojuego_id ni POST, solo muestra el formulario de búsqueda
-        return render(request, 'crudApp/CrudVideojuego/UpdateV.html')
+def update_videojuego(request):
+    usuario_id = request.GET.get('usuario_id')
+    usuario = None
+    videojuegos = None
+    form = None
+
+    if usuario_id:
+        # Obtener detalles del usuario
+        user_response = requests.get(f'http://localhost:8080/usuarios', params={'id': usuario_id})
+        if user_response.ok:
+            usuario = user_response.json()
+
+            # Obtener videojuegos asociados al usuario
+            games_response = requests.get(f'http://localhost:8080/videojuegos/{usuario_id}')
+            if games_response.ok:
+                videojuegos = games_response.json()
+
+                # Si se selecciona un juego, cargar los datos del juego en el formulario
+                selected_game_id = request.GET.get('videojuego_id')
+                if selected_game_id:
+                    selected_game_response = requests.get(f'http://localhost:8080/videojuegos/{usuario_id}/{selected_game_id}')
+                    if selected_game_response.ok:
+                        selected_game_data = selected_game_response.json()
+                        form = VideojuegoForm(initial=selected_game_data)
+
+    return render(request, 'crudApp/CrudVideojuego/UpdateV.html', {
+        'form': form, 'videojuegos': videojuegos, 'usuario': usuario, 'usuario_id': usuario_id
+    })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
