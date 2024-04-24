@@ -262,14 +262,39 @@ def search_videojuegos(request):
 
 
 def delete_usuario(request):
-    if request.method == 'DELETE':
-        form = UsuarioForm(request.DELETE)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'El usuario se ha eliminado con exito')
-            return redirect('delete_usuario')
-    else:
-        form = UsuarioForm()
+    form = UsuarioForm(request.POST or None)
+
+    if request.method == 'POST':
+        if 'confirm_delete' in request.POST:
+            usuario_id = request.POST.get('id')
+            if form.is_valid() and usuario_id:
+                response = requests.delete(f'http://localhost:8080/usuarios/{usuario_id}')
+                if response.status_code == 200:
+                    messages.success(request, 'El usuario se ha eliminado con éxito.')
+                    return redirect('delete_usuario')
+                else:
+                    print(f'Error al eliminar usuario: {response.status_code}')
+                    messages.error(request, f'Error al eliminar el usuario en el backend de Spring Boot. '
+                                            f'Código de estado: {response.status_code}')
+            else:
+                print('El formulario no es válido o no se proporcionó ID de usuario.')
+        else:
+            print('La confirmación de eliminación no se recibió.')
+
+    # GET request: Búsqueda de usuario para mostrar en el formulario
+    elif request.method == 'GET':
+        usuario_id = request.GET.get('id')
+        if usuario_id:
+            response = requests.get(f'http://localhost:8080/usuarios', params={'id': usuario_id})
+            if response.status_code == 200:
+                usuario_data = response.json()
+                form = UsuarioForm(initial=usuario_data)
+            else:
+                messages.error(request, f'Error al obtener los datos del usuario del backend de Spring Boot. '
+                                        f'Código de estado: {response.status_code}')
+                print(f'Error al buscar usuario: {response.status_code}')
+
+    # Independientemente del método, siempre renderizamos la misma plantilla.
     return render(request, 'crudApp/CrudUsuario/DeleteU.html', {'form': form})
 
 
