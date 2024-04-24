@@ -37,9 +37,9 @@
             {% csrf_token %}
                 <input type="hidden" name="confirm_delete" id="confirmDeleteField" value="False">
             {{ form.as_p }}
-            <button type="submit" class="btn btn-primary" onclick="confirmDelete()">Eliminar</button>
+            <button type="submit" class="btn btn-danger" onclick="confirmDelete()">Eliminar</button>
             <a href="{% url 'usuario' %}" class="btn btn-secondary mx-2">Atrás</a>
-        </form>
+            </form>
         </div>
     </div>
     {% endblock %}
@@ -53,10 +53,8 @@
 
 <script>
 function confirmDelete() {
-    if (confirm('¿Estás seguro de que quieres eliminar este usuario?')) {
-        document.getElementById('confirmDeleteField').value = "True";
-        document.getElementById('deleteForm').submit();
-    }
+    // Confirmación estándar de JavaScript; retorna 'true' si el usuario acepta y 'false' si no.
+    return confirm('¿Estás seguro de que quieres eliminar este usuario?');
 }
 </script>
 
