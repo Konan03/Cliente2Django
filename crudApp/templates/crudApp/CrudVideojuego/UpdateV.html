@@ -8,75 +8,67 @@
 </head>
 <body>
 
-<div class="container mt-4">
-    <h1 class="mb-3 d-flex justify-content-center">Actualizar Videojuego</h1>
+{% extends 'crudApp/home.html' %}
+{% block title %}Actualizar Videojuego{% endblock %}
+{% block content %}
+    <div class="container mt-5">
+        <h1 class="mb-3 d-flex justify-content-center">Actualizar Videojuego</h1>
+        <!-- Display messages of confirmation or error -->
 
-    <form method="get" action="{% url 'update_videojuego' %}" class="form-inline mb-4">
-        <input class="form-control mr-2" type="text" name="usuario_id" placeholder="ID del usuario" required>
-        <button class="btn btn-primary" type="submit">Buscar Usuario</button>
-    </form>
-
-    {% if usuario %}
-        <div class="user-info">
-            <h2 class="mb-3">Usuario: {{ usuario.nombre }}</h2>
+        <div class="container-fluid">
+            <!-- Form to search for the user by ID -->
+            <form class="d-flex mb-3" action="" method="GET">
+                <input class="form-control me-2" type="number" placeholder="ID del Usuario" aria-label="Search" name="usuario_id" value="{{ usuario_id|default_if_none:'' }}" required>
+                <button class="btn btn-outline-success" type="submit">Buscar</button>
+            </form>
         </div>
 
-        {% if videojuegos %}
-            <form method="post" action="{% url 'update_videojuego' %}">
-                {% csrf_token %}
-                <input type="hidden" name="usuario_id" value="{{ usuario_id }}">
-                <div class="form-group">
-                    <label for="videojuego_id">Seleccione un videojuego para actualizar:</label>
-                    <select name="videojuego_id" id="videojuego_id" class="form-control mb-3">
-                        {% for videojuego in videojuegos %}
-                            <option value="{{ videojuego.id }}">{{ videojuego.nombre }}</option>
-                        {% endfor %}
-                    </select>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
-                <!-- Aquí se mostrará el formulario cuando se seleccione un juego -->
-                <div id="formulario-videojuego">
-                    {% if form %}
-                        {{ form.as_p }}
-                        <button type="submit" class="btn btn-success mt-3">Actualizar</button>
-                    {% endif %}
-                </div>
-            </form>
-        {% else %}
-            <p class="alert alert-warning">No se encontraron videojuegos para este usuario.</p>
+            {% endfor %}
         {% endif %}
-    {% else %}
-        <p class="alert alert-info">Por favor, ingrese un ID de usuario para buscar.</p>
-    {% endif %}
-</div>
 
-<script>
-    document.getElementById('videojuego_id').addEventListener('change', function() {
-        var selectedGameId = this.value;
-        var usuarioId = document.querySelector('[name="usuario_id"]').value;
-        var newUrl = "{% url 'update_videojuego' %}?usuario_id=" + usuarioId + "&videojuego_id=" + selectedGameId;
-        window.location.href = newUrl;
-    });
+        {% if usuario %}
+            <h2 class="text-center">Usuario Seleccionado: {{ usuario.nombre }}</h2>
 
-    // Función para cargar el formulario cuando se selecciona un juego
-    function cargarFormulario() {
-        var selectedGameId = document.getElementById('videojuego_id').value;
-        var usuarioId = document.querySelector('[name="usuario_id"]').value;
-        var url = "/actualizar_videojuego_formulario?usuario_id=" + usuarioId + "&videojuego_id=" + selectedGameId;
+            <!-- List of video games associated with the user -->
+            <div class="list-group mb-3">
+                {% for videojuego in videojuegos %}
+                    <a href="?usuario_id={{ usuario.id }}&videojuego_id={{ videojuego.id }}" class="list-group-item list-group-item-action">{{ videojuego.nombre }}</a>
+                {% endfor %}
+            </div>
+        {% endif %}
 
-        // Realizar una petición AJAX para cargar el formulario
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', url, true);
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState == 4 && xhr.status == 200) {
-                document.getElementById('formulario-videojuego').innerHTML = xhr.responseText;
-            }
-        };
-        xhr.send();
-    }
+        {% if form %}
+            <div class="mb-3 d-flex justify-content-center">
+                <form method="POST" class="w-50">
+                    {% csrf_token %}
+                    {{ form.non_field_errors }}
+                    {% for field in form %}
+                        <div class="form-group">
+                            {{ field.errors }}
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                        </div>
+                    {% endfor %}
+                    <input type="hidden" name="usuario_id" value="{{ usuario_id }}">
+                    <input type="hidden" name="videojuego_id" value="{{ videojuego_id }}">
+                    <button type="submit" class="btn btn-primary">Actualizar</button>
+                    <a href="{% url 'home' %}" class="btn btn-secondary mx-2">Atrás</a>
+                </form>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
 
-    // Llamar a la función cuando se carga la página
-    cargarFormulario();
-</script>
-
+<!-- Optional: jQuery and Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script>
 </body>
 </html>

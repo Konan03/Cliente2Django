@@ -28,7 +28,15 @@ class VideojuegoForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        if 'instance' in kwargs:
+            instance = kwargs['instance']
+            kwargs['initial'] = {
+                'id': instance.id,
+                'nombre': instance.nombre,
+                'precio': instance.precio,
+                'multijugador': instance.multijugador,
+                'fechaLanzamiento': instance.fechaLanzamiento.strftime('%Y-%m-%dT%H:%M') if instance.fechaLanzamiento else '',
+            }
         super(VideojuegoForm, self).__init__(*args, **kwargs)
         self.fields['fechaLanzamiento'].input_formats = ('%Y-%m-%dT%H:%M',)
-
 

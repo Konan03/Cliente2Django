@@ -33,7 +33,7 @@
             {% endfor %}
         {% endif %}
         <div class="mb-3 d-flex justify-content-center">
-            <form method="delete">
+            <form method="post">
             {% csrf_token %}
             {{ form.as_p }}
             <button type="submit" class="btn btn-primary">Eliminar</button>
