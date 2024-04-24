@@ -8,16 +8,12 @@ from django.contrib import messages  # Importa el módulo de mensajes
 from .forms import UsuarioForm
 from django.shortcuts import render, redirect
 from .forms import VideojuegoForm
+from django.shortcuts import render
+import requests
+from django.http import JsonResponse
 
+from .models import Usuario
 
-@never_cache
-def lista_usuarios(request):
-    response = requests.get('http://localhost:8080/usuarios')
-    if response.ok:
-        usuarios = response.json()
-        return render(request, 'crudApp/lista_usuarios.html', {'usuarios': usuarios})
-    else:
-        return HttpResponse('Error al obtener los usuarios: ' + str(response.status_code))
 
 def home(request):
     # Aquí puedes agregar cualquier contexto que desees pasar a tu plantilla
@@ -62,13 +58,13 @@ def add_usuario(request):
         form = UsuarioForm()
     return render(request, 'crudApp/CrudUsuario/CreateU.html', {'form': form})
 
+
 def seleccionar_usuario(request):
     response = requests.get('http://localhost:8080/usuarios')  # Asume que esta es la URL de tu API
     if response.ok:
         usuarios = response.json()
         return render(request, 'crudApp/seleccionar_usuario.html', {'usuarios': usuarios})
     return render(request, 'error.html', {'mensaje': 'No se pudieron cargar los usuarios.'})
-
 
 def add_videojuego(request, usuario_id):
     if request.method == 'POST':
@@ -99,8 +95,6 @@ def add_videojuego(request, usuario_id):
     else:
         form = VideojuegoForm()
     return render(request, 'crudApp/CrudVideojuego/CreateV.html', {'form': form, 'usuario_id': usuario_id})
-
-
 def read_videojuegos(request):
     url = 'http://localhost:8080/videojuegos'  # Cambia esto según tu configuración
     response = requests.get(url)
@@ -109,9 +103,6 @@ def read_videojuegos(request):
         return render(request, 'crudApp/CrudVideojuego/ReadV.html', {'videojuegos': videojuegos})
     else:
         return HttpResponse('No se pudo obtener los videojuegos', status=response.status_code)
-
-# Vista corregida
-# views.py
 
 def update_videojuego(request):
     usuario_id = request.GET.get('usuario_id')
@@ -142,6 +133,26 @@ def update_videojuego(request):
         'form': form, 'videojuegos': videojuegos, 'usuario': usuario, 'usuario_id': usuario_id
     })
 
+def delete_videojuego(request):
+    usuario_id = request.GET.get('usuario_id')
+    usuario = None
+    videojuegos = None
+
+    if usuario_id:
+        # Obtener detalles del usuario
+        user_response = requests.get(f'http://localhost:8080/usuarios', params={'id': usuario_id})
+        if user_response.ok:
+            usuario = user_response.json()
+
+            # Obtener videojuegos asociados al usuario
+            games_response = requests.get(f'http://localhost:8080/videojuegos/{usuario_id}')
+            if games_response.ok:
+                videojuegos = games_response.json()
+
+    return render(request, 'crudApp/CrudVideojuego/Deletev.html', {
+        'usuario': usuario, 'videojuegos': videojuegos, 'usuario_id': usuario_id
+    })
+
 def delete_usuario(request):
     if request.method == 'DELETE':
         form = UsuarioForm(request.DELETE)
@@ -160,18 +171,6 @@ def view_usuario(request):
         return render(request, 'crudApp/CrudUsuario/ReadU.html', {'usuarios': usuarios})
     else:
         return HttpResponse('Error al obtener los usuarios: ' + str(response.status_code))
-
-
-import requests
-from django.http import JsonResponse
-
-import requests
-from django.shortcuts import render
-from django.http import JsonResponse
-
-import requests
-from django.http import JsonResponse
-
 
 def update_usuario(request):
     try:

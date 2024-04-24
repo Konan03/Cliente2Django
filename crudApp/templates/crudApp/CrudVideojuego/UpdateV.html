@@ -1,13 +1,15 @@
-<!-- Front (update_videojuego.html) -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Actualizar Videojuego</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
+
 <div class="container mt-4">
-    <h1>Actualizar Videojuego</h1>
+    <h1 class="mb-3 d-flex justify-content-center">Actualizar Videojuego</h1>
 
     <form method="get" action="{% url 'update_videojuego' %}" class="form-inline mb-4">
         <input class="form-control mr-2" type="text" name="usuario_id" placeholder="ID del usuario" required>
@@ -16,29 +18,34 @@
 
     {% if usuario %}
         <div class="user-info">
-            <h2>Usuario: {{ usuario.nombre }}</h2>
+            <h2 class="mb-3">Usuario: {{ usuario.nombre }}</h2>
         </div>
 
         {% if videojuegos %}
             <form method="post" action="{% url 'update_videojuego' %}">
                 {% csrf_token %}
                 <input type="hidden" name="usuario_id" value="{{ usuario_id }}">
-                <label for="videojuego_id">Seleccione un videojuego para actualizar:</label>
-                <select name="videojuego_id" id="videojuego_id" class="form-control mb-3">
-                    {% for videojuego in videojuegos %}
-                        <option value="{{ videojuego.id }}">{{ videojuego.nombre }}</option>
-                    {% endfor %}
-                </select>
-                {% if form %}
-                    {{ form.as_p }}
-                    <button type="submit" class="btn btn-success">Actualizar</button>
-                {% endif %}
+                <div class="form-group">
+                    <label for="videojuego_id">Seleccione un videojuego para actualizar:</label>
+                    <select name="videojuego_id" id="videojuego_id" class="form-control mb-3">
+                        {% for videojuego in videojuegos %}
+                            <option value="{{ videojuego.id }}">{{ videojuego.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <!-- Aquí se mostrará el formulario cuando se seleccione un juego -->
+                <div id="formulario-videojuego">
+                    {% if form %}
+                        {{ form.as_p }}
+                        <button type="submit" class="btn btn-success mt-3">Actualizar</button>
+                    {% endif %}
+                </div>
             </form>
         {% else %}
-            <p>No se encontraron videojuegos para este usuario.</p>
+            <p class="alert alert-warning">No se encontraron videojuegos para este usuario.</p>
         {% endif %}
     {% else %}
-        <p>Por favor, ingrese un ID de usuario para buscar.</p>
+        <p class="alert alert-info">Por favor, ingrese un ID de usuario para buscar.</p>
     {% endif %}
 </div>
 
@@ -49,6 +56,26 @@
         var newUrl = "{% url 'update_videojuego' %}?usuario_id=" + usuarioId + "&videojuego_id=" + selectedGameId;
         window.location.href = newUrl;
     });
+
+    // Función para cargar el formulario cuando se selecciona un juego
+    function cargarFormulario() {
+        var selectedGameId = document.getElementById('videojuego_id').value;
+        var usuarioId = document.querySelector('[name="usuario_id"]').value;
+        var url = "/actualizar_videojuego_formulario?usuario_id=" + usuarioId + "&videojuego_id=" + selectedGameId;
+
+        // Realizar una petición AJAX para cargar el formulario
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                document.getElementById('formulario-videojuego').innerHTML = xhr.responseText;
+            }
+        };
+        xhr.send();
+    }
+
+    // Llamar a la función cuando se carga la página
+    cargarFormulario();
 </script>
 
 </body>

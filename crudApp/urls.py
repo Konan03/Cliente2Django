@@ -1,12 +1,11 @@
 from django.urls import path
-from .views import lista_usuarios, home, UserView, VideogameView, AboutView, delete_usuario, view_usuario, \
+from .views import  home, UserView, VideogameView, AboutView, delete_usuario, view_usuario, \
     update_usuario
 from .views import add_usuario
-from .views import seleccionar_usuario,add_videojuego,read_videojuegos,update_videojuego
+from .views import seleccionar_usuario,add_videojuego,read_videojuegos,update_videojuego, delete_videojuego
 
 urlpatterns = [
     path('', home, name='home'),  # La URL base para la página de inicio
-    path('usuarios/', lista_usuarios, name='lista_usuarios'),  # Para mostrar la lista de usuarios
     path('usuario/', UserView.as_view(), name='usuario'),  # Para la página general de usuario donde estarán los botones de CRUD
     path('videojuego/', VideogameView.as_view(), name='videojuego'),  # Para la sección de videojuegos
     path('about/', AboutView.as_view(), name='about'),  # Para la página de "Acerca de"
@@ -15,6 +14,7 @@ urlpatterns = [
     path('videojuego/add/<int:usuario_id>/', add_videojuego, name='add_videojuego'),
     path('videojuego/read/', read_videojuegos, name='read_videojuegos'),
     path('videojuego/update/', update_videojuego, name='update_videojuego'),
+    path('videojuego/delete/', delete_videojuego, name='delete_videojuego'),
     path('usuario/eliminar/', delete_usuario, name='delete_usuario'),
     path('usuario/verUsuarios/', view_usuario, name='view_usuario'),
     path('usuario/ActualizarUsuarios/', update_usuario, name='update_usuario'),

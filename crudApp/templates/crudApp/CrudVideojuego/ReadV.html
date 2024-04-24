@@ -1,30 +1,48 @@
-<!-- read_videojuegos.html -->
-<h1>Lista de Videojuegos</h1>
-<table class="table table-bordered table-hover"> <!-- Agregado table-hover para mejor interacción visual -->
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Nombre</th>
-        <th>Precio</th>
-        <th>Multijugador</th>
-        <th>Fecha de Lanzamiento</th>
-        <th>ID del Usuario</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for videojuego in videojuegos %}
-        <tr>
-            <td>{{ videojuego.id }}</td>
-            <td>{{ videojuego.nombre }}</td>
-            <td>${{ videojuego.precio|floatformat:2 }}</td> <!-- Formato de precio -->
-            <td>{{ videojuego.multijugador|yesno:"Sí,No" }}</td> <!-- Mejor indicador de booleano -->
-            <td>{{ videojuego.fechaLanzamiento }}</td> <!-- Formato de fecha -->
-            <td>{{ videojuego.usuarioId }}</td>
-            <td>
-            </td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="6">No se encontraron videojuegos.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Videojuegos</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+
+<div class="container mt-4">
+    <h1 class="mb-3 d-flex justify-content-center">Lista de Videojuegos</h1>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Multijugador</th>
+                <th>Fecha de Lanzamiento</th>
+                <th>ID del Usuario</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for videojuego in videojuegos %}
+                <tr>
+                    <td>{{ videojuego.id }}</td>
+                    <td>{{ videojuego.nombre }}</td>
+                    <td>${{ videojuego.precio|floatformat:2 }}</td>
+                    <td>{{ videojuego.multijugador|yesno:"Sí,No" }}</td>
+                    <td>{{ videojuego.fechaLanzamiento }}</td>
+                    <td>{{ videojuego.usuarioId }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="6">No se encontraron videojuegos.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <a href="{% url 'videojuego' %}" class="btn btn-secondary mx-2">Atrás</a>
+</div>
+
+<!-- Opcional: jQuery y Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script>
+</body>
+</html>
