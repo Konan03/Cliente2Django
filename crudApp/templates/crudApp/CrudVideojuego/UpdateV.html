@@ -49,21 +49,15 @@
             <div class="mb-3 d-flex justify-content-center">
                 <form method="POST" class="w-50">
                     {% csrf_token %}
-                    {{ form.non_field_errors }}
-                    {% for field in form %}
-                        <div class="form-group">
-                            {{ field.errors }}
-                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                            {{ field }}
-                        </div>
-                    {% endfor %}
-                    <input type="hidden" name="usuario_id" value="{{ usuario_id }}">
-                    <input type="hidden" name="videojuego_id" value="{{ videojuego_id }}">
+                    {{ form.as_p }}
                     <button type="submit" class="btn btn-primary">Actualizar</button>
-                    <a href="{% url 'home' %}" class="btn btn-secondary mx-2">Atrás</a>
+                    <a href="{% url 'videojuego' %}" class="btn btn-secondary mx-2">Atrás</a>
                 </form>
+                <input type="hidden" name="usuario_id" value="{{ usuario_id }}">
+                <input type="hidden" name="videojuego_id" value="{{ videojuego_id }}">
             </div>
         {% endif %}
+
     </div>
 {% endblock %}
 

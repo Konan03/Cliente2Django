@@ -37,11 +37,6 @@ class VideogameView(View):
         return render(request, 'crudApp/videojuego.html')
 
 
-class AboutView(View):
-    def get(self, request):
-        return render(request, 'about.html')
-
-
 def add_usuario(request):
     if request.method == 'POST':
         form = UsuarioForm(request.POST)
@@ -172,7 +167,7 @@ def update_videojuego(request):
 
     except Exception as e:
         messages.error(request, f'Ocurrió un error: {e}')
-        return render(request, 'crudApp/CrudVideojuego/UpdateV.html')
+        return render(request, 'crudApp/CrudVideojuego/UpdateV.html', {'form': form})
 
 def delete_videojuego(request):
     try:
@@ -354,3 +349,23 @@ def update_usuario(request):
     # Si hubo algún error o si no se proporcionó un ID de usuario válido, simplemente renderizamos el formulario vacío
     form = UsuarioForm()
     return render(request, 'crudApp/CrudUsuario/UpdateU.html', {'form': form})
+
+    def AboutView(request):
+    # Puedes pasar los nombres de los integrantes como contexto si lo deseas
+        nombres_integrantes = [
+        "Nombre del Integrante 1",
+        "Nombre del Integrante 2",
+        "Nombre del Integrante 3",
+        "Nombre del Integrante 4"
+    ]
+    return render(request, 'crudApp/about.html', {'nombres_integrantes': nombres_integrantes})
+
+
+def about_view(request):
+    nombres_integrantes = [
+        "Manuel",
+        "Mariana",
+        "Juan",
+        "Sebastian"
+    ]
+    return render(request, 'crudApp/about.html', {'nombres_integrantes': nombres_integrantes})
