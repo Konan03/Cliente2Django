@@ -38,6 +38,17 @@ class VideogameView(View):
     def get(self, request):
         return render(request, 'videojuego.html')
 
+
+class AboutView(View):
+    def get(self, request):
+        return render(request, 'crudApp/about.html')
+
+class SearchView(View):
+    def get(self, request):
+        return render(request, 'crudApp/search.html')
+
+
+
 def add_usuario(request):
     if request.method == 'POST':
         form = UsuarioForm(request.POST)
@@ -59,8 +70,7 @@ def add_usuario(request):
         form = UsuarioForm()
     return render(request, 'crudApp/CrudUsuario/CreateU.html', {'form': form})
 
-<<<<<<< HEAD
-=======
+
 
 def seleccionar_usuario(request):
     response = requests.get('http://localhost:8080/usuarios')  # Asume que esta es la URL de tu API
