@@ -1,22 +1,29 @@
-
+{% load static %}
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <div class="container">
+
+
+    <div class="container">
+        <img src="{% static 'img/banner-ico.png' %}" alt="icon" class="me-2" width="30" height="30">
         <a class="navbar-brand" href="{% url 'home' %}">Video Juegos</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'usuario' %}">Usuarios</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'videojuego' %}">Videojuegos</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'about' %}">Acerca de</a>
-            </li>
-          </ul>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'search' %}">Buscar</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'usuario' %}">Usuarios</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'videojuego' %}">Videojuegos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'about' %}">Acerca de</a>
+                </li>
+            </ul>
         </div>
-      </div>
+    </div>
 </nav>

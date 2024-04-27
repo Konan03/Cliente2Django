@@ -40,7 +40,11 @@ class VideogameView(View):
 
 class AboutView(View):
     def get(self, request):
-        return render(request, 'about.html')
+        return render(request, 'crudApp/about.html')
+
+class SearchView(View):
+    def get(self, request):
+        return render(request, 'crudApp/search.html')
 
 
 def add_usuario(request):

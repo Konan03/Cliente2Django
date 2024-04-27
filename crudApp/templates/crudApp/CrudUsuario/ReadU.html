@@ -16,7 +16,7 @@
 
         <div class="form-group">
             <label for="filtroPremium">Filtrar por estatus:</label>
-            <select class="form-control" id="filtroPremium">
+            <select class="form-select" id="filtroPremium">
                 <option value="todos">Todos</option>
                 <option value="premium">Premium</option>
                 <option value="no-premium">No Premium</option>
@@ -107,21 +107,26 @@
 
 <script>
     $(document).ready(function() {
-        // Función para filtrar usuarios por estatus premium
-        $('#filtroPremium').change(function() {
-            console.log("Cambio detectado en el filtro"); // Verificar si se detecta el cambio
-            var filtro = $(this).val(); // Obtener el valor seleccionado del filtro
-            $('.usuario').show(); // Mostrar todas las filas al inicio para resetear el filtro
-            if (filtro === 'premium') {
-                $('.usuario:not(.premium)').hide(); // Ocultar filas de usuarios que no son premium
-            } else if (filtro === 'no-premium') {
-                $('.usuario.premium').hide(); // Ocultar filas de usuarios que son premium
-            }
-        });
-
-        // Mostrar todas las filas al cargar la página
-        $('#filtroPremium').val('todos').change();
+    // Ahora usamos data-bs-target en lugar de data-target
+    $('[data-bs-toggle="modal"]').click(function() {
+        var target = $(this).attr('data-bs-target');
+        $(target).modal('show');
     });
+
+    $('#filtroPremium').change(function() {
+        var filtro = $(this).val();
+        $('.usuario').show(); // Reset para mostrar todos
+        if (filtro === 'premium') {
+            $('.usuario:not(.premium)').hide();
+        } else if (filtro === 'no-premium') {
+            $('.usuario.premium').hide();
+        }
+    });
+
+    // Trigger change para aplicar el filtro por defecto al cargar la página
+    $('#filtroPremium').change();
+});
+
 </script>
 
 

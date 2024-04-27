@@ -1,4 +1,3 @@
-
 <!-- home.html -->
 <!DOCTYPE html>
 <html lang="es">
@@ -10,15 +9,21 @@
 </head>
 <body>
 
-    {% include 'crudApp/navbar.html' %}
+{% include 'crudApp/navbar.html' %}
 
-    <div class="container mt-5">
-        {% block content %}{% endblock %}
-    </div>
+<div class="container mt-5">
+    {% block content %}
 
 
-    <!-- Contenido de tu página de inicio aquí -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+
+
+    {% endblock %}
+</div>
+
+
+<!-- Contenido de tu página de inicio aquí -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
