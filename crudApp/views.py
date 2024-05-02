@@ -19,8 +19,6 @@ def lista_usuarios(request):
         return HttpResponse('Error al obtener los usuarios: ' + str(response.status_code))
 
 
-
-
 def home(request):
     # Aquí puedes agregar cualquier contexto que desees pasar a tu plantilla
     context = {
@@ -106,8 +104,6 @@ def delete_usuario(request):
     return render(request, 'crudApp/CrudUsuario/DeleteU.html', {'form': form})
 
 
-
-
 def view_usuario(request):
     response = requests.get('http://localhost:8080/usuarios')
     if response.ok:
@@ -175,5 +171,36 @@ def update_usuario(request):
     # Si hubo algún error o si no se proporcionó un ID de usuario válido, simplemente renderizamos el formulario vacío
     form = UsuarioForm()
     return render(request, 'crudApp/CrudUsuario/UpdateU.html', {'form': form})
+
+import requests
+from django.shortcuts import render
+
+def buscar_usuario(request):
+    usuarios = []
+    base_url = "http://localhost:8080/usuarios"
+
+    if request.GET:
+        params = request.GET.dict()
+        if 'esPremium' in params:
+            params['esPremium'] = True if params['esPremium'].lower() == 'si' else False
+
+        response = requests.get(base_url, params=params)
+        print("Respuesta de la API:", response.status_code, response.text)
+
+        if response.status_code == 200:
+            # Aquí asumimos que la respuesta podría ser un solo objeto o una lista
+            data = response.json()
+            if isinstance(data, dict):  # Si es un diccionario, lo convertimos en una lista
+                usuarios = [data]
+            elif isinstance(data, list):
+                usuarios = data
+            else:
+                print("Formato de respuesta no reconocido")
+        else:
+            print("Error en la solicitud API:", response.status_code, response.text)
+
+    return render(request, 'crudApp/search.html', {'usuarios': usuarios})
+
+
 
 
