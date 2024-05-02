@@ -3,8 +3,12 @@ from django.urls import path
 from .views import  home, UserView, VideogameView, delete_usuario, view_usuario, \
     update_usuario
 from .views import lista_usuarios, home, UserView, VideogameView, AboutView, delete_usuario, view_usuario, \
+<<<<<<< HEAD
     update_usuario, SearchView
 
+=======
+    update_usuario, SearchView, buscar_usuario
+>>>>>>> test1
 from .views import add_usuario
 from .views import seleccionar_usuario,add_videojuego,read_videojuegos,update_videojuego, delete_videojuego,  about_view
 
@@ -15,8 +19,12 @@ urlpatterns = [
 
 
     path('about/', AboutView.as_view(), name='about'),  # Para la página de "Acerca de"
+<<<<<<< HEAD
     path('search/', SearchView.as_view(), name='search'),  # Para la página de "Acerca de"
 
+=======
+    path('search/', buscar_usuario, name='buscar_usuario'),
+>>>>>>> test1
     path('usuario/crear/', add_usuario, name='add_usuario'),
     path('usuarios/seleccionar/', seleccionar_usuario, name='seleccionar_usuario'),
     path('videojuego/add/<int:usuario_id>/', add_videojuego, name='add_videojuego'),
