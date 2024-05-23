@@ -1,68 +1,34 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Actualizar Videojuego</title>
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-</head>
-<body>
-
 {% extends 'crudApp/home.html' %}
 {% block title %}Actualizar Videojuego{% endblock %}
 {% block content %}
-    <div class="container mt-5">
-        <h1 class="mb-3 d-flex justify-content-center">Actualizar Videojuego</h1>
-        <!-- Display messages of confirmation or error -->
+<div class="container mt-5">
+    <h1 class="mb-3 d-flex justify-content-center">Actualizar Videojuego</h1>
 
-        <div class="container-fluid">
-            <!-- Form to search for the user by ID -->
-            <form class="d-flex mb-3" action="" method="GET">
-                <input class="form-control me-2" type="number" placeholder="ID del Usuario" aria-label="Search" name="usuario_id" value="{{ usuario_id|default_if_none:'' }}" required>
-                <button class="btn btn-outline-success" type="submit">Buscar</button>
-            </form>
-        </div>
-
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            {% endfor %}
-        {% endif %}
-
-        {% if usuario %}
-            <h2 class="text-center">Usuario Seleccionado: {{ usuario.nombre }}</h2>
-
-            <!-- List of video games associated with the user -->
-            <div class="list-group mb-3">
-                {% for videojuego in videojuegos %}
-                    <a href="?usuario_id={{ usuario.id }}&videojuego_id={{ videojuego.id }}" class="list-group-item list-group-item-action">{{ videojuego.nombre }}</a>
-                {% endfor %}
-            </div>
-        {% endif %}
-
-        {% if form %}
-            <div class="mb-3 d-flex justify-content-center">
-                <form method="POST" class="w-50">
-                    {% csrf_token %}
-                    {{ form.as_p }}
-                    <button type="submit" class="btn btn-primary">Actualizar</button>
-                    <a href="{% url 'videojuego' %}" class="btn btn-secondary mx-2">Atrás</a>
-                </form>
-                <input type="hidden" name="usuario_id" value="{{ usuario_id }}">
-                <input type="hidden" name="videojuego_id" value="{{ videojuego_id }}">
-            </div>
-        {% endif %}
-
+    <div class="container-fluid">
+        <form class="d-flex mb-3" action="" method="GET">
+            <input class="form-control me-2" type="number" placeholder="ID del Usuario" aria-label="Search" name="usuario_id" required>
+            <button class="btn btn-outline-success" type="submit">Buscar</button>
+        </form>
     </div>
-{% endblock %}
 
-<!-- Optional: jQuery and Bootstrap JS -->
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script>
-</body>
-</html>
+    {% if usuario %}
+    <h2 class="text-center">Usuario Seleccionado: {{ usuario.nombre }}</h2>
+    <div class="list-group mb-3">
+        {% for videojuego in videojuegos %}
+        <a href="?usuario_id={{ usuario.id }}&videojuego_id={{ videojuego.id }}" class="list-group-item list-group-item-action">{{ videojuego.nombre }}</a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if form %}
+    <div class="mb-3 d-flex justify-content-center">
+        <form method="POST" class="w-50">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Actualizar</button>
+            <a href="{% url 'videojuego' %}" class="btn btn-secondary mx-2">Atrás</a>
+        </form>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
