@@ -14,14 +14,14 @@
 <div class="container mt-4">
     <h1 class="mb-3 d-flex justify-content-center">Lista de Videojuegos</h1>
 
-    <div class="form-group">
+    <form method="get" action="{% url 'read_videojuegos' %}" class="form-group mb-3">
         <label for="filtroMultijugador">Filtrar por Multijugador:</label>
-        <select class="form-select" id="filtroMultijugador">
-            <option value="todos">Todos</option>
-            <option value="true">Multijugador</option>
-            <option value="false">No Multijugador</option>
+        <select class="form-select" id="filtroMultijugador" name="multijugador" onchange="this.form.submit()">
+            <option value="todos" {% if filter_multijugador == None or filter_multijugador == 'todos' %}selected{% endif %}>Todos</option>
+            <option value="true" {% if filter_multijugador == 'true' %}selected{% endif %}>Multijugador</option>
+            <option value="false" {% if filter_multijugador == 'false' %}selected{% endif %}>No Multijugador</option>
         </select>
-    </div>
+    </form>
 
     <div class="table-responsive">
         <table class="table table-striped">
@@ -32,6 +32,7 @@
                 <th>Precio</th>
                 <th>Multijugador</th>
                 <th>Fecha de Lanzamiento</th>
+                <th>ID Usuario</th>
             </tr>
             </thead>
             <tbody>
@@ -42,31 +43,16 @@
                 <td>${{ videojuego.precio|floatformat:2 }}</td>
                 <td>{{ videojuego.multijugador|yesno:"Sí,No" }}</td>
                 <td>{{ videojuego.fechaLanzamiento }}</td>
+                <td>{{ videojuego.usuario_id }}</td>
             </tr>
             {% endfor %}
             </tbody>
         </table>
-        <a href="{% url 'read_videojuegos' %}" class="btn btn-secondary mx-2">Atrás</a>
+        <a href="{% url 'videojuego' %}" class="btn btn-secondary mx-2">Atrás</a>
     </div>
 </div>
 {% endblock %}
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(document).ready(function() {
-        $('#filtroMultijugador').change(function() {
-            var filtro = $(this).val();
-            $('.videojuego').show(); // Reset para mostrar todos
-            if (filtro === 'true') {
-                $('.videojuego:not(.multijugador)').hide();
-            } else if (filtro === 'false') {
-                $('.videojuego.multijugador').hide();
-            }
-        });
-
-        // Trigger change para aplicar el filtro por defecto al cargar la página
-        $('#filtroMultijugador').change();
-    });
-</script>
 </body>
 </html>

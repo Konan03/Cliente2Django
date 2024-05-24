@@ -4,7 +4,7 @@ import requests
 from django.views import View
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from .forms import UsuarioForm, VideojuegoForm
+from .forms import UsuarioForm, VideojuegoCreateForm, VideojuegoUpdateForm
 from django.shortcuts import render
 import json
 from django.core.serializers.json import DjangoJSONEncoder
@@ -74,7 +74,7 @@ def add_usuario(request):
 
 def add_videojuego(request):
     usuario = None
-    form = VideojuegoForm()
+    form = VideojuegoCreateForm()
 
     if request.method == 'GET':
         usuario_id = request.GET.get('usuario_id')
@@ -82,12 +82,12 @@ def add_videojuego(request):
             response = requests.get(f'http://localhost:8080/usuarios/{usuario_id}')
             if response.status_code == 200:
                 usuario = response.json()
-                form = VideojuegoForm(initial={'usuario_id': usuario_id})
+                form = VideojuegoCreateForm(initial={'usuario_id': usuario_id})
             else:
                 messages.error(request, 'Usuario no encontrado.')
 
     if request.method == 'POST':
-        form = VideojuegoForm(request.POST)
+        form = VideojuegoCreateForm(request.POST)
         if form.is_valid():
             videojuego_data = form.cleaned_data
 
@@ -98,15 +98,9 @@ def add_videojuego(request):
                 elif isinstance(value, datetime):
                     videojuego_data[key] = value.replace(tzinfo=None).isoformat()
 
-            # Imprimir datos que se están enviando para depuración
-            print("Datos que se están enviando:", videojuego_data)
-
             usuario_id = request.POST.get('usuario_id')
             if usuario_id:
                 response = requests.post(f'http://localhost:8080/videojuegos/{usuario_id}', json=videojuego_data)
-
-                # Imprimir respuesta del servidor para depuración
-                print("Respuesta del servidor:", response.status_code, response.text)
 
                 if response.status_code == 201:
                     messages.success(request, 'Videojuego agregado con éxito.')
@@ -126,60 +120,142 @@ def add_videojuego(request):
     return render(request, 'crudApp/CrudVideojuego/CreateV.html', {'form': form, 'usuario': usuario})
 
 
+def read_videojuegos(request):
+    base_url = "http://localhost:8080/videojuegos"
+    params = {}
 
-ddef read_videojuegos(request):
-     filter_multijugador = request.GET.get('multijugador')
-     if filter_multijugador is not None and filter_multijugador in ['true', 'false']:
-         multijugador = filter_multijugador == 'true'
-         videojuegos = Videojuego.objects.filter(multijugador=multijugador)
-     else:
-         videojuegos = Videojuego.objects.all()
-     return render(request, 'crudApp/CrudVideojuego/ReadV.html', {'videojuegos': videojuegos, 'filter_multijugador': filter_multijugador})
+    filter_multijugador = request.GET.get('multijugador')
+    if filter_multijugador == 'true':
+        params['multijugador'] = 'true'
+    elif filter_multijugador == 'false':
+        params['multijugador'] = 'false'
 
+    response = requests.get(base_url, params=params)
+    videojuegos = response.json() if response.status_code == 200 else []
 
-def update_videojuego(request, usuario_id, videojuego_id):
-    usuario = get_object_or_404(Usuario, id=usuario_id)
-    videojuego = get_object_or_404(Videojuego, id=videojuego_id, usuario=usuario)
+    return render(request, 'crudApp/CrudVideojuego/ReadV.html', {
+        'videojuegos': videojuegos,
+        'filter_multijugador': filter_multijugador,
+    })
+
+def update_videojuego(request):
+    try:
+        if request.method == 'POST':
+            form = VideojuegoUpdateForm(request.POST)
+            if form.is_valid():
+                videojuego_id = form.cleaned_data['id']
+                usuario_id = request.POST.get('usuario_id')
+                form_data = form.cleaned_data
+                form_data['fechaLanzamiento'] = form_data['fechaLanzamiento'].strftime('%Y-%m-%dT%H:%M')
+
+                # Eliminamos el id del formulario para que no se incluya al actualizar
+                del form_data['id']
+                for key, value in form_data.items():
+                    if isinstance(value, Decimal):
+                        form_data[key] = float(value)
+                    elif isinstance(value, datetime):
+                        form_data[key] = value.replace(tzinfo=None).isoformat()
+
+                response = requests.put(f'http://localhost:8080/videojuegos/{usuario_id}/{videojuego_id}', json=form_data,
+                                        headers={'Content-Type': 'application/json'})
+                if response.status_code == 200:
+                    messages.success(request, 'El videojuego se ha actualizado con éxito')
+                    return redirect('update_videojuego')
+                else:
+                    messages.error(request, f'Error al actualizar el videojuego en el backend de Spring Boot. '
+                                            f'Código de estado: {response.status_code}')
+        else:
+            usuario_id = request.GET.get('usuario_id')
+            videojuego_id = request.GET.get('videojuego_id')
+
+            if usuario_id and not videojuego_id:
+                response_usuario = requests.get(f'http://localhost:8080/usuarios/{usuario_id}')
+                if response_usuario.status_code == 200:
+                    usuario_data = response_usuario.json()
+                    return render(request, 'crudApp/CrudVideojuego/UpdateV.html', {'usuario': usuario_data})
+                else:
+                    messages.error(request, f'Usuario no encontrado. Código de estado: {response_usuario.status_code}')
+                    return redirect('update_videojuego')
+
+            if usuario_id and videojuego_id:
+                response = requests.get(f'http://localhost:8080/videojuegos/{usuario_id}/{videojuego_id}')
+                if response.status_code == 200:
+                    videojuego_data = response.json()
+                    form = VideojuegoUpdateForm(initial=videojuego_data)
+                    return render(request, 'crudApp/CrudVideojuego/UpdateV.html', {'form': form, 'usuario_id': usuario_id, 'videojuego': videojuego_data})
+                else:
+                    messages.error(request, f'Videojuego no encontrado. Código de estado: {response.status_code}')
+                    return redirect('update_videojuego')
+            else:
+                form = VideojuegoUpdateForm()
+    except Exception as e:
+        messages.error(request, f'Ocurrió un error: {e}')
+
+    form = VideojuegoUpdateForm()
+    return render(request, 'crudApp/CrudVideojuego/UpdateV.html', {'form': form})
+
+def delete_videojuego(request):
+    usuario = None
+    videojuego = None
+
+    if request.method == 'GET':
+        usuario_id = request.GET.get('usuario_id')
+        videojuego_id = request.GET.get('videojuego_id')
+
+        if usuario_id:
+            response = requests.get(f'http://localhost:8080/usuarios/{usuario_id}')
+            if response.status_code == 200:
+                usuario = response.json()
+                if videojuego_id:
+                    response = requests.get(f'http://localhost:8080/videojuegos/{usuario_id}/{videojuego_id}')
+                    if response.status_code == 200:
+                        videojuego = response.json()
+                    else:
+                        messages.error(request, 'Videojuego no encontrado.')
+            else:
+                messages.error(request, 'Usuario no encontrado.')
+
     if request.method == 'POST':
-        form = VideojuegoForm(request.POST, instance=videojuego)
-        if form.is_valid():
-            form.save()
-            return redirect('read_videojuegos.html')
-    else:
-        form = VideojuegoForm(instance=videojuego, initial={'usuario_id': usuario_id})
-    return render(request, 'crudApp/CrudVideojuego/UpdateV.html', {'form': form, 'videojuego': videojuego})
+        usuario_id = request.POST.get('usuario_id')
+        videojuego_id = request.POST.get('id')
+        if usuario_id and videojuego_id:
+            response = requests.delete(f'http://localhost:8080/videojuegos/{usuario_id}/{videojuego_id}')
+            if response.status_code == 200:
+                messages.success(request, 'Videojuego eliminado con éxito.')
+                return redirect('delete_videojuego')
+            else:
+                messages.error(request, f'Error al eliminar el videojuego. Código de estado: {response.status_code}')
 
-
-def delete_videojuego(request, usuario_id, videojuego_id):
-    usuario = get_object_or_404(Usuario, id=usuario_id)
-    videojuego = get_object_or_404(Videojuego, id=videojuego_id, usuario=usuario)
-    if request.method == 'POST':
-        videojuego.delete()
-        return redirect('DeleteV.html')
-    return render(request, 'crudApp/CrudVideojuego/DeleteV.html', {'videojuego': videojuego})
+    return render(request, 'crudApp/CrudVideojuego/DeleteV.html', {'usuario': usuario, 'videojuego': videojuego})
 
 
 def search_videojuegos(request):
-    videojuegos = []
-    if request.method == 'GET' and 'usuario_id' in request.GET:
-        params = {
-            'id': request.GET.get('id'),
-            'nombre': request.GET.get('nombre'),
-            'precio': request.GET.get('precio'),
-            'multijugador': request.GET.get('multijugador'),
-        }
-        try:
-            response = requests.get(f"http://localhost:8080/usuario/{request.GET['usuario_id']}", params=params)
-            if response.status_code == 200:
-                videojuegos = response.json()
-            else:
-                messages.error(request, "No se encontraron videojuegos con los criterios proporcionados.")
-        except requests.RequestException as e:
-            messages.error(request, str(e))
+     videojuegos = []
+     messages = ""
+     if request.method == 'GET':
+         params = {
+             'id': request.GET.get('id'),
+             'nombre': request.GET.get('nombre'),
+             'precio': request.GET.get('precio'),
+             'multijugador': request.GET.get('multijugador'),
+         }
 
-    return render(request, 'crudApp/CrudVideojuego/Search.html', {
-        'videojuegos': videojuegos
-    })
+         # Filtrando los parámetros que son None
+         params = {k: v for k, v in params.items() if v is not None and v != ""}
+
+         try:
+             response = requests.get("http://localhost:8080/videojuegos", params=params)
+             if response.status_code == 200:
+                 videojuegos = response.json()
+             else:
+                 messages = "No se encontraron videojuegos con los criterios proporcionados."
+         except requests.RequestException as e:
+             messages = str(e)
+
+     return render(request, 'crudApp/CrudVideojuego/SearchV.html', {
+         'videojuegos': videojuegos,
+         'messages': messages
+     })
 
 def delete_usuario(request):
     if request.method == 'DELETE':

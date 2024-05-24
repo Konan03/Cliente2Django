@@ -1,36 +1,103 @@
-{% extends 'crudApp/home.html' %}
-{% block title %}Eliminar Videojuego{% endblock %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Eliminar Videojuego</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .btn-primary-custom {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            margin-top: 10px;
+        }
+
+        .btn-primary-custom:hover {
+            background-color: #0056b3;
+        }
+
+        .search-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .search-container form {
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 10px;
+        }
+
+        .btn-group-custom {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn-group-custom a {
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+{% include 'crudApp/home.html' %}
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-4">
     <h1 class="mb-3 d-flex justify-content-center">Eliminar Videojuego</h1>
 
-    <div class="container-fluid">
-        <form class="d-flex mb-3" action="" method="GET">
-            <input class="form-control me-2" type="number" placeholder="ID del Usuario" aria-label="Search" name="usuario_id" required>
-            <button class="btn btn-outline-success" type="submit">Buscar</button>
+    <!-- Formulario para buscar usuario -->
+    <div class="search-container">
+        <form action="{% url 'delete_videojuego' %}" method="GET">
+            <input class="form-control mb-2" type="search" placeholder="ID del Usuario" aria-label="Search" name="usuario_id" value="{{ request.GET.usuario_id }}">
+            <button class="btn btn-primary btn-block btn-primary-custom" type="submit">Buscar Usuario</button>
         </form>
     </div>
 
     {% if usuario %}
-    <h2 class="text-center">Usuario Seleccionado: {{ usuario.nombre }}</h2>
-    <div class="list-group mb-3">
-        {% for videojuego in videojuegos %}
-        <a href="?usuario_id={{ usuario.id }}&videojuego_id={{ videojuego.id }}" class="list-group-item list-group-item-action">{{ videojuego.nombre }}</a>
-        {% endfor %}
+    <!-- Formulario para buscar videojuego -->
+    <div class="search-container">
+        <form action="{% url 'delete_videojuego' %}" method="GET">
+            <input type="hidden" name="usuario_id" value="{{ usuario.id }}">
+            <input class="form-control mb-2" type="search" placeholder="ID del Videojuego" aria-label="Search" name="videojuego_id">
+            <button class="btn btn-primary btn-block btn-primary-custom" type="submit">Buscar Videojuego</button>
+        </form>
     </div>
     {% endif %}
 
-    {% if videojuego_id %}
+    <!-- Muestra mensajes de confirmación o error -->
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if videojuego %}
     <div class="mb-3 d-flex justify-content-center">
-        <form method="POST" class="w-50">
+        <form method="POST">
             {% csrf_token %}
-            <p>¿Está seguro de que desea eliminar el videojuego "{{ videojuego_id }}"?</p>
-            <input type="hidden" name="usuario_id" value="{{ usuario_id }}">
-            <input type="hidden" name="videojuego_id" value="{{ videojuego_id }}">
-            <button type="submit" class="btn btn-danger">Eliminar</button>
-            <a href="{% url 'delete_videojuego' %}" class="btn btn-secondary mx-2">Cancelar</a>
+            <input type="hidden" name="usuario_id" value="{{ usuario.id }}">
+            <input type="hidden" name="id" value="{{ videojuego.id }}">
+            <p>Nombre: {{ videojuego.nombre }}</p>
+            <p>Precio: {{ videojuego.precio }}</p>
+            <p>Multijugador: {{ videojuego.multijugador }}</p>
+            <p>Fecha de Lanzamiento: {{ videojuego.fechaLanzamiento }}</p>
+            <button type="submit" class="btn btn-danger btn-primary-custom">Eliminar Videojuego</button>
+            <a href="{% url 'videojuego' %}" class="btn btn-secondary mx-2">Atrás</a>
         </form>
     </div>
     {% endif %}
 </div>
 {% endblock %}
+
+<!-- Opcional: jQuery y Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script>
+</body>
+</html>

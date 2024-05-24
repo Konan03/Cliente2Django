@@ -17,9 +17,9 @@ class UsuarioForm(forms.ModelForm):
         self.fields['fechaNacimiento'].input_formats = ('%Y-%m-%dT%H:%M',)
 
 
-class VideojuegoForm(forms.ModelForm):
+class VideojuegoCreateForm(forms.ModelForm):
     usuario_id = forms.IntegerField(widget=forms.HiddenInput(), required=True)
-    id = forms.IntegerField(required=True)
+    id = forms.IntegerField(required=True)  # Campo editable para la creación
 
     class Meta:
         model = Videojuego
@@ -30,5 +30,23 @@ class VideojuegoForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super(VideojuegoForm, self).__init__(*args, **kwargs)
+        super(VideojuegoCreateForm, self).__init__(*args, **kwargs)
+        self.fields['fechaLanzamiento'].input_formats = ('%Y-%m-%dT%H:%M',)
+
+
+
+class VideojuegoUpdateForm(forms.ModelForm):
+    usuario_id = forms.IntegerField(widget=forms.HiddenInput(), required=True)
+    id = forms.IntegerField(widget=forms.HiddenInput(), required=True)  # Campo oculto para la actualización
+
+    class Meta:
+        model = Videojuego
+        fields = ['id', 'nombre', 'precio', 'multijugador', 'fechaLanzamiento', 'usuario_id']
+        widgets = {
+            'multijugador': forms.Select(choices=[(True, 'Sí'), (False, 'No')]),
+            'fechaLanzamiento': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(VideojuegoUpdateForm, self).__init__(*args, **kwargs)
         self.fields['fechaLanzamiento'].input_formats = ('%Y-%m-%dT%H:%M',)
