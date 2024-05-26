@@ -107,10 +107,10 @@ def add_videojuego(request):
                     return redirect('add_videojuego')
                 else:
                     try:
-                        error_message = response.json()
+                        error_message = response.json().get('detail', response.text)
                     except ValueError:
                         error_message = response.text
-                    messages.error(request, f'Error al agregar el videojuego: {response.status_code} - {error_message}')
+                    messages.error(request, f'Error el id ya se encuentra en uso: {response.status_code} - {error_message}')
             else:
                 messages.error(request, 'El ID del usuario no fue proporcionado.')
 
@@ -164,6 +164,8 @@ def update_videojuego(request):
                 else:
                     messages.error(request, f'Error al actualizar el videojuego en el backend de Spring Boot. '
                                             f'Código de estado: {response.status_code}')
+            else:
+                messages.error(request, 'El formulario no es válido.')
         else:
             usuario_id = request.GET.get('usuario_id')
             videojuego_id = request.GET.get('videojuego_id')
@@ -194,6 +196,7 @@ def update_videojuego(request):
     form = VideojuegoUpdateForm()
     return render(request, 'crudApp/CrudVideojuego/UpdateV.html', {'form': form})
 
+
 def delete_videojuego(request):
     usuario = None
     videojuego = None
@@ -212,6 +215,8 @@ def delete_videojuego(request):
                         videojuego = response.json()
                     else:
                         messages.error(request, 'Videojuego no encontrado.')
+                else:
+                    messages.error(request, 'Por favor, proporcione un ID de videojuego.')
             else:
                 messages.error(request, 'Usuario no encontrado.')
 
@@ -225,9 +230,10 @@ def delete_videojuego(request):
                 return redirect('delete_videojuego')
             else:
                 messages.error(request, f'Error al eliminar el videojuego. Código de estado: {response.status_code}')
+        else:
+            messages.error(request, 'ID de usuario o videojuego no proporcionado.')
 
     return render(request, 'crudApp/CrudVideojuego/DeleteV.html', {'usuario': usuario, 'videojuego': videojuego})
-
 
 def search_videojuegos(request):
      videojuegos = []

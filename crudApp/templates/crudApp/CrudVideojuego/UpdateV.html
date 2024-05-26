@@ -78,6 +78,11 @@
     {% endfor %}
     {% endif %}
 
+    <!-- Botón de atrás y formulario para actualizar videojuego -->
+    <div class="mb-3 d-flex justify-content-center">
+        <a href="{% url 'videojuego' %}" class="btn btn-secondary mx-2">Atrás</a>
+    </div>
+
     {% if videojuego %}
     <div class="mb-3 d-flex justify-content-center">
         <form method="POST">
@@ -86,7 +91,6 @@
             <input type="hidden" name="usuario_id" value="{{ usuario_id }}">
             <input type="hidden" name="id" value="{{ videojuego.id }}">
             <button type="submit" class="btn btn-primary btn-primary-custom">Actualizar Videojuego</button>
-            <a href="{% url 'videojuego' %}" class="btn btn-secondary mx-2">Atrás</a>
         </form>
     </div>
     {% endif %}
