@@ -91,9 +91,10 @@ def delete_usuario(request):
     elif request.method == 'GET':
         usuario_id = request.GET.get('id')
         if usuario_id:
-            response = requests.get(f'http://localhost:8080/usuarios', params={'id': usuario_id})
+            response = requests.get(f'http://localhost:8080/usuarios/{usuario_id}')
+
             if response.status_code == 200:
-                usuario_data = response.json()
+                usuario_data = response.json()  
                 form = UsuarioForm(initial=usuario_data)
             else:
                 messages.error(request, f'Error al obtener los datos del usuario del backend de Spring Boot. '
@@ -150,7 +151,8 @@ def update_usuario(request):
             if usuario_id:
                 print(f'Búsqueda de usuario con ID: {usuario_id}')
                 # Realizar una solicitud GET al backend de Spring Boot para obtener los datos del usuario
-                response = requests.get(f'http://localhost:8080/usuarios', params={'id': usuario_id})
+                response = requests.get(f'http://localhost:8080/usuarios/{usuario_id}')
+
 
                 if response.status_code == 200:
                     # Si la solicitud fue exitosa, obtener los datos del usuario del cuerpo de la respuesta JSON
