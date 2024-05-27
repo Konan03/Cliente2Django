@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Buscar Videojuegos</title>
-    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         .btn-primary-custom {
@@ -47,24 +46,43 @@
 <div class="container mt-4">
     <h1 class="mb-3 d-flex justify-content-center">Buscar Videojuegos</h1>
 
+    <!-- Formulario para buscar usuario -->
     <div class="search-container">
         <form action="{% url 'search_videojuegos' %}" method="GET">
-            <input class="form-control mb-2" type="text" placeholder="ID" aria-label="Search" name="id">
-            <button class="btn btn-primary btn-block btn-primary-custom" type="submit">Buscar</button>
-        </form>
-        <form action="{% url 'search_videojuegos' %}" method="GET">
-            <input class="form-control mb-2" type="text" placeholder="Nombre" aria-label="Search" name="nombre">
-            <button class="btn btn-primary btn-block btn-primary-custom" type="submit">Buscar</button>
-        </form>
-        <form action="{% url 'search_videojuegos' %}" method="GET">
-            <input class="form-control mb-2" type="text" placeholder="Precio" aria-label="Search" name="precio">
-            <button class="btn btn-primary btn-block btn-primary-custom" type="submit">Buscar</button>
-        </form>
-        <form action="{% url 'search_videojuegos' %}" method="GET">
-            <input class="form-control mb-2" type="text" placeholder="Multijugador (true/false)" aria-label="Search" name="multijugador">
-            <button class="btn btn-primary btn-block btn-primary-custom" type="submit">Buscar</button>
+            <input class="form-control mb-2" type="search" placeholder="ID del Usuario" aria-label="Search" name="usuario_id" value="{{ usuario_id }}">
+            <button class="btn btn-primary btn-block btn-primary-custom" type="submit">Buscar Usuario</button>
         </form>
     </div>
+
+    {% if usuario %}
+    <div class="mt-4">
+        <h3 class="mb-3 d-flex justify-content-center">Usuario: {{ usuario.nombre }}</h3>
+
+        <!-- Formularios para buscar videojuegos -->
+        <div class="search-container">
+            <form action="{% url 'search_videojuegos' %}" method="GET">
+                <input type="hidden" name="usuario_id" value="{{ usuario.id }}">
+                <input class="form-control mb-2" type="text" placeholder="ID" aria-label="Search" name="id">
+                <button class="btn btn-primary btn-block btn-primary-custom" type="submit">Buscar</button>
+            </form>
+            <form action="{% url 'search_videojuegos' %}" method="GET">
+                <input type="hidden" name="usuario_id" value="{{ usuario.id }}">
+                <input class="form-control mb-2" type="text" placeholder="Nombre" aria-label="Search" name="nombre">
+                <button class="btn btn-primary btn-block btn-primary-custom" type="submit">Buscar</button>
+            </form>
+            <form action="{% url 'search_videojuegos' %}" method="GET">
+                <input type="hidden" name="usuario_id" value="{{ usuario.id }}">
+                <input class="form-control mb-2" type="text" placeholder="Precio" aria-label="Search" name="precio">
+                <button class="btn btn-primary btn-block btn-primary-custom" type="submit">Buscar</button>
+            </form>
+            <form action="{% url 'search_videojuegos' %}" method="GET">
+                <input type="hidden" name="usuario_id" value="{{ usuario.id }}">
+                <input class="form-control mb-2" type="text" placeholder="Multijugador (true/false)" aria-label="Search" name="multijugador">
+                <button class="btn btn-primary btn-block btn-primary-custom" type="submit">Buscar</button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
 
     <div class="btn-group-custom">
         <a href="{% url 'videojuego' %}" class="btn btn-secondary">Atrás</a>

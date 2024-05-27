@@ -75,6 +75,9 @@
     </div>
 
     {% if usuario %}
+    <div class="alert alert-info text-center">
+        <strong>Usuario encontrado:</strong> {{ usuario_nombre }}
+    </div>
     <div class="mb-3 d-flex justify-content-center">
         <form method="POST">
             {% csrf_token %}

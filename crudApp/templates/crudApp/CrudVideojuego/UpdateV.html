@@ -56,6 +56,10 @@
     </div>
 
     {% if usuario %}
+    <div class="alert alert-info text-center">
+        <strong>Usuario encontrado:</strong> {{ usuario.nombre }}
+    </div>
+
     <!-- Formulario para buscar videojuego -->
     <div class="search-container">
         <form action="{% url 'update_videojuego' %}" method="GET">
@@ -68,32 +72,34 @@
 
     <!-- Muestra mensajes de confirmación o error -->
     {% if messages %}
-    {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
+    <div class="mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
     </div>
-    {% endfor %}
     {% endif %}
 
-    <!-- Botón de atrás y formulario para actualizar videojuego -->
-    <div class="mb-3 d-flex justify-content-center">
-        <a href="{% url 'videojuego' %}" class="btn btn-secondary mx-2">Atrás</a>
-    </div>
-
     {% if videojuego %}
+    <div class="alert alert-info text-center">
+        <strong>Videojuego encontrado:</strong> {{ videojuego.nombre }}
+    </div>
     <div class="mb-3 d-flex justify-content-center">
         <form method="POST">
             {% csrf_token %}
             {{ form.as_p }}
-            <input type="hidden" name="usuario_id" value="{{ usuario_id }}">
-            <input type="hidden" name="id" value="{{ videojuego.id }}">
             <button type="submit" class="btn btn-primary btn-primary-custom">Actualizar Videojuego</button>
         </form>
     </div>
     {% endif %}
+
+    <div class="mb-3 d-flex justify-content-center">
+        <a href="{% url 'videojuego' %}" class="btn btn-secondary mx-2">Atrás</a>
+    </div>
 </div>
 {% endblock %}
 
