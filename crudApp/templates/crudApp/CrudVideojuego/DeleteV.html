@@ -89,14 +89,10 @@
             <p>Multijugador: {{ videojuego.multijugador }}</p>
             <p>Fecha de Lanzamiento: {{ videojuego.fechaLanzamiento }}</p>
             <button type="submit" class="btn btn-danger btn-primary-custom">Eliminar Videojuego</button>
+            <a href="{% url 'videojuego' %}" class="btn btn-secondary mx-2">Atrás</a>
         </form>
     </div>
     {% endif %}
-
-    <!-- Botón de atrás siempre visible -->
-    <div class="mb-3 d-flex justify-content-center">
-        <a href="{% url 'videojuego' %}" class="btn btn-secondary mx-2">Atrás</a>
-    </div>
 </div>
 {% endblock %}
 

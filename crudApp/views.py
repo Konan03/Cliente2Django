@@ -4,20 +4,12 @@ import requests
 from django.views import View
 from django.shortcuts import render, redirect
 from django.contrib import messages  # Importa el módulo de mensajes
-from .forms import UsuarioForm
+from .forms import UsuarioForm, VideojuegoCreateForm, VideojuegoUpdateForm
 from django.shortcuts import render
 import json
 from django.core.serializers.json import DjangoJSONEncoder
-
-@never_cache
-def lista_usuarios(request):
-    response = requests.get('http://localhost:8080/usuarios')
-    if response.ok:
-        usuarios = response.json()
-        return render(request, 'crudApp/lista_usuarios.html', {'usuarios': usuarios})
-    else:
-        return HttpResponse('Error al obtener los usuarios: ' + str(response.status_code))
-
+from decimal import Decimal
+from datetime import datetime  # Importa datetime
 
 def home(request):
     # Aquí puedes agregar cualquier contexto que desees pasar a tu plantilla
@@ -34,17 +26,211 @@ class UserView(View):
 
 class VideogameView(View):
     def get(self, request):
-        return render(request, 'videojuego.html')
+        return render(request, 'crudApp/videojuego.html')
 
-
-class AboutView(View):
-    def get(self, request):
-        return render(request, 'crudApp/about.html')
 
 class SearchView(View):
     def get(self, request):
         return render(request, 'crudApp/search.html')
 
+def add_videojuego(request):
+    usuario = None
+    form = VideojuegoCreateForm()
+
+    if request.method == 'GET':
+        usuario_id = request.GET.get('usuario_id')
+        if usuario_id:
+            response = requests.get(f'http://localhost:8080/usuarios/{usuario_id}')
+            if response.status_code == 200:
+                usuario = response.json()
+                form = VideojuegoCreateForm(initial={'usuario_id': usuario_id})
+            else:
+                messages.error(request, 'Usuario no encontrado.')
+
+    if request.method == 'POST':
+        form = VideojuegoCreateForm(request.POST)
+        if form.is_valid():
+            videojuego_data = form.cleaned_data
+
+            # Convertir objetos Decimal a float y datetime a string sin zona horaria
+            for key, value in videojuego_data.items():
+                if isinstance(value, Decimal):
+                    videojuego_data[key] = float(value)
+                elif isinstance(value, datetime):
+                    videojuego_data[key] = value.replace(tzinfo=None).isoformat()
+
+            usuario_id = request.POST.get('usuario_id')
+            if usuario_id:
+                response = requests.post(f'http://localhost:8080/videojuegos/{usuario_id}', json=videojuego_data)
+
+                if response.status_code == 201:
+                    messages.success(request, 'Videojuego agregado con éxito.')
+                    return redirect('add_videojuego', usuario_id=usuario_id)
+                else:
+                    try:
+                        error_message = response.json().get('detail', response.text)
+                    except ValueError:
+                        error_message = response.text
+                    messages.error(request, f'Error al agregar el videojuego: {response.status_code} - {error_message}')
+            else:
+                messages.error(request, 'El ID del usuario no fue proporcionado.')
+
+        else:
+            messages.error(request, 'El formulario no es válido.')
+
+    return render(request, 'crudApp/CrudVideojuego/CreateV.html', {'form': form, 'usuario': usuario})
+
+
+
+def read_videojuegos(request):
+    filtro_multijugador = request.GET.get('multijugador')
+    params = {}
+
+    if filtro_multijugador and filtro_multijugador != 'todos':
+        if filtro_multijugador == 'true':
+            params['multijugador'] = True
+        elif filtro_multijugador == 'false':
+            params['multijugador'] = False
+
+    response = requests.get('http://localhost:8080/videojuegos', params=params)
+    if response.status_code == 200:
+        videojuegos = response.json()
+    else:
+        messages.error(request, 'Error al obtener los videojuegos: ' + str(response.status_code))
+        videojuegos = []
+
+    return render(request, 'crudApp/CrudVideojuego/ReadV.html', {
+        'videojuegos': videojuegos,
+        'filter_multijugador': filtro_multijugador
+    })
+
+
+def update_videojuego(request):
+    try:
+        if request.method == 'POST':
+            form = VideojuegoUpdateForm(request.POST)
+            if form.is_valid():
+                videojuego_id = form.cleaned_data['id']
+                usuario_id = request.POST.get('usuario_id')
+                form_data = form.cleaned_data
+                form_data['fechaLanzamiento'] = form_data['fechaLanzamiento'].strftime('%Y-%m-%dT%H:%M')
+
+                # Eliminamos el id del formulario para que no se incluya al actualizar
+                del form_data['id']
+                for key, value in form_data.items():
+                    if isinstance(value, Decimal):
+                        form_data[key] = float(value)
+                    elif isinstance(value, datetime):
+                        form_data[key] = value.replace(tzinfo=None).isoformat()
+
+                response = requests.put(f'http://localhost:8080/videojuegos/{usuario_id}/{videojuego_id}', json=form_data,
+                                        headers={'Content-Type': 'application/json'})
+                if response.status_code == 200:
+                    messages.success(request, 'El videojuego se ha actualizado con éxito')
+                    return redirect('update_videojuego')
+                else:
+                    messages.error(request, f'Error al actualizar el videojuego en el backend de Spring Boot. '
+                                            f'Código de estado: {response.status_code}')
+            else:
+                messages.error(request, 'El formulario no es válido.')
+        else:
+            usuario_id = request.GET.get('usuario_id')
+            videojuego_id = request.GET.get('videojuego_id')
+
+            if usuario_id and not videojuego_id:
+                response_usuario = requests.get(f'http://localhost:8080/usuarios/{usuario_id}')
+                if response_usuario.status_code == 200:
+                    usuario_data = response_usuario.json()
+                    return render(request, 'crudApp/CrudVideojuego/UpdateV.html', {'usuario': usuario_data})
+                else:
+                    messages.error(request, f'Usuario no encontrado. Código de estado: {response_usuario.status_code}')
+                    return redirect('update_videojuego')
+
+            if usuario_id and videojuego_id:
+                response = requests.get(f'http://localhost:8080/videojuegos/{usuario_id}/{videojuego_id}')
+                if response.status_code == 200:
+                    videojuego_data = response.json()
+                    form = VideojuegoUpdateForm(initial=videojuego_data)
+                    return render(request, 'crudApp/CrudVideojuego/UpdateV.html', {'form': form, 'usuario_id': usuario_id, 'videojuego': videojuego_data})
+                else:
+                    messages.error(request, f'Videojuego no encontrado. Código de estado: {response.status_code}')
+                    return redirect('update_videojuego')
+            else:
+                form = VideojuegoUpdateForm()
+    except Exception as e:
+        messages.error(request, f'Ocurrió un error: {e}')
+
+    form = VideojuegoUpdateForm()
+    return render(request, 'crudApp/CrudVideojuego/UpdateV.html', {'form': form})
+
+
+def delete_videojuego(request):
+    usuario = None
+    videojuego = None
+
+    if request.method == 'GET':
+        usuario_id = request.GET.get('usuario_id')
+        videojuego_id = request.GET.get('videojuego_id')
+
+        if usuario_id:
+            response = requests.get(f'http://localhost:8080/usuarios/{usuario_id}')
+            if response.status_code == 200:
+                usuario = response.json()
+                if videojuego_id:
+                    response = requests.get(f'http://localhost:8080/videojuegos/{usuario_id}/{videojuego_id}')
+                    if response.status_code == 200:
+                        videojuego = response.json()
+                    else:
+                        messages.error(request, 'Videojuego no encontrado.')
+                else:
+                    messages.error(request, 'Por favor, proporcione un ID de videojuego.')
+            else:
+                messages.error(request, 'Usuario no encontrado.')
+
+    if request.method == 'POST':
+        usuario_id = request.POST.get('usuario_id')
+        videojuego_id = request.POST.get('id')
+        if usuario_id and videojuego_id:
+            response = requests.delete(f'http://localhost:8080/videojuegos/{usuario_id}/{videojuego_id}')
+            if response.status_code == 200:
+                messages.success(request, 'Videojuego eliminado con éxito.')
+                return redirect('delete_videojuego')
+            else:
+                messages.error(request, f'Error al eliminar el videojuego. Código de estado: {response.status_code}')
+        else:
+            messages.error(request, 'ID de usuario o videojuego no proporcionado.')
+
+    return render(request, 'crudApp/CrudVideojuego/DeleteV.html', {'usuario': usuario, 'videojuego': videojuego})
+
+
+
+def search_videojuegos(request):
+     videojuegos = []
+     messages = ""
+     if request.method == 'GET':
+         params = {
+             'id': request.GET.get('id'),
+             'nombre': request.GET.get('nombre'),
+             'precio': request.GET.get('precio'),
+             'multijugador': request.GET.get('multijugador'),
+         }
+
+         # Filtrando los parámetros que son None
+         params = {k: v for k, v in params.items() if v is not None and v != ""}
+
+         try:
+             response = requests.get("http://localhost:8080/videojuegos", params=params)
+             if response.status_code == 200:
+                 videojuegos = response.json()
+             else:
+                 messages = "No se encontraron videojuegos con los criterios proporcionados."
+         except requests.RequestException as e:
+             messages = str(e)
+
+     return render(request, 'crudApp/CrudVideojuego/SearchV.html', {
+         'videojuegos': videojuegos,
+         'messages': messages
+     })
 
 
 def add_usuario(request):
@@ -69,212 +255,43 @@ def add_usuario(request):
     return render(request, 'crudApp/CrudUsuario/CreateU.html', {'form': form})
 
 
-
-def seleccionar_usuario(request):
-    response = requests.get('http://localhost:8080/usuarios')  # Asume que esta es la URL de tu API
-    if response.ok:
-        usuarios = response.json()
-        return render(request, 'crudApp/seleccionar_usuario.html', {'usuarios': usuarios})
-    return render(request, 'error.html', {'mensaje': 'No se pudieron cargar los usuarios.'})
-
-
-def add_videojuego(request, usuario_id):
-    if request.method == 'POST':
-        form = VideojuegoForm(request.POST)
-        if form.is_valid():
-            data = form.cleaned_data
-            # Convertir cualquier objeto Decimal a float
-            if isinstance(data['precio'], Decimal):
-                data['precio'] = float(data['precio'])
-
-            # Asegurarse de que la fecha de lanzamiento está presente y es válida
-            if data['fechaLanzamiento']:
-                data['fechaLanzamiento'] = data['fechaLanzamiento'].strftime('%Y-%m-%dT%H:%M')
-            else:
-                messages.error(request, 'La fecha de lanzamiento es requerida.')
-                return render(request, 'crudApp/CrudVideojuego/CreateV.html', {'form': form, 'usuario_id': usuario_id})
-
-            # Enviar los datos del videojuego al servidor externo
-            response = requests.post(f'http://localhost:8080/videojuegos/{usuario_id}', json=data)
-            if response.status_code == 201:
-                videojuego_creado = response.json()
-                videojuego_id = videojuego_creado.get('id')
-                messages.success(request, f'El videojuego con ID {videojuego_id} se ha creado exitosamente.')
-            else:
-                messages.error(request, 'Hubo un error al crear el videojuego en el servidor externo.')
-
-            return redirect('add_videojuego', usuario_id=usuario_id)
-    else:
-        form = VideojuegoForm()
-    return render(request, 'crudApp/CrudVideojuego/CreateV.html', {'form': form, 'usuario_id': usuario_id})
-
-
-def read_videojuegos(request):
-    url = 'http://localhost:8080/videojuegos'  # Cambia esto según tu configuración
-    response = requests.get(url)
-    if response.status_code == 200:
-        videojuegos = response.json()
-        return render(request, 'crudApp/CrudVideojuego/ReadV.html', {'videojuegos': videojuegos})
-    else:
-        return HttpResponse('No se pudo obtener los videojuegos', status=response.status_code)
-
-
-def update_videojuego(request):
-    try:
-        usuario_id = request.GET.get('usuario_id')
-        videojuego_id = request.GET.get('videojuego_id')
-
-        usuario = None
-        videojuegos = []
-        form = VideojuegoForm()
-
-        if usuario_id:
-            user_response = requests.get(f'http://localhost:8080/usuarios', params={'id': usuario_id})
-            if user_response.ok:
-                usuario = user_response.json()
-
-                games_response = requests.get(f'http://localhost:8080/videojuegos/{usuario_id}')
-                if games_response.ok:
-                    videojuegos = games_response.json()
-
-                    if videojuego_id:
-                        selected_game_response = requests.get(f'http://localhost:8080/videojuegos/{usuario_id}/{videojuego_id}')
-                        if selected_game_response.ok:
-                            selected_game_data = selected_game_response.json()
-                            form = VideojuegoForm(initial=selected_game_data)
-            else:
-                messages.error(request, 'No se pudo obtener el usuario.')
-                return redirect('update_videojuego')
-
-        if request.method == 'POST':
-            form = VideojuegoForm(request.POST)
-            if form.is_valid():
-                data = form.cleaned_data
-                if isinstance(data['precio'], Decimal):
-                    data['precio'] = float(data['precio'])
-
-                if data.get('fechaLanzamiento'):
-                    data['fechaLanzamiento'] = data['fechaLanzamiento'].strftime('%Y-%m-%dT%H:%M')
-                    update_response = requests.put(f'http://localhost:8080/videojuegos/{usuario_id}/{videojuego_id}', json=data)
-                    if update_response.ok:
-                        messages.success(request, '¡El videojuego se ha actualizado correctamente!')
-                        return redirect('update_videojuego')  # Asegúrate de usar la URL correcta para la redirección
-                    else:
-                        messages.error(request, 'Error al actualizar el videojuego.')
-                else:
-                    messages.error(request, 'La fecha de lanzamiento es requerida.')
-                    return render(request, 'crudApp/CrudVideojuego/UpdateV.html', {'form': form, 'usuario_id': usuario_id})
-            else:
-                messages.error(request, 'El formulario no es válido. Verifique los datos ingresados.')
-
-        return render(request, 'crudApp/CrudVideojuego/UpdateV.html', {
-            'usuario': usuario,
-            'videojuegos': videojuegos,
-            'form': form,
-            'usuario_id': usuario_id,
-            'videojuego_id': videojuego_id
-        })
-
-    except Exception as e:
-        messages.error(request, f'Ocurrió un error: {e}')
-        return render(request, 'crudApp/CrudVideojuego/UpdateV.html', {'form': form})
-
-def delete_videojuego(request):
-    try:
-        usuario_id = request.GET.get('usuario_id')
-        videojuego_id = request.GET.get('videojuego_id')
-
-        usuario = None
-        videojuegos = []
-        form = VideojuegoForm()
-
-        if usuario_id:
-            user_response = requests.get(f'http://localhost:8080/usuarios', params={'id': usuario_id})
-            if user_response.ok:
-                usuario = user_response.json()
-
-                games_response = requests.get(f'http://localhost:8080/videojuegos/{usuario_id}')
-                if games_response.ok:
-                    videojuegos = games_response.json()
-
-                    if videojuego_id:
-                        selected_game_response = requests.get(f'http://localhost:8080/videojuegos/{usuario_id}/{videojuego_id}')
-                        if selected_game_response.ok:
-                            selected_game_data = selected_game_response.json()
-                            form = VideojuegoForm(initial=selected_game_data)
-            else:
-                messages.error(request, 'No se pudo obtener el usuario.')
-                return redirect('delete_videojuego')
-
-        if request.method == 'POST':
-            form = VideojuegoForm(request.POST)
-            if form.is_valid():
-                data = form.cleaned_data
-                if isinstance(data['precio'], Decimal):
-                    data['precio'] = float(data['precio'])
-
-                if data.get('fechaLanzamiento'):
-                    data['fechaLanzamiento'] = data['fechaLanzamiento'].strftime('%Y-%m-%dT%H:%M')
-                    update_response = requests.delete(f'http://localhost:8080/videojuegos/{usuario_id}/{videojuego_id}', json=data)
-                    if update_response.ok:
-                        messages.success(request, '¡El videojuego se ha actualizado correctamente!')
-                        return redirect('delete_videojuego')  # Asegúrate de usar la URL correcta para la redirección
-                    else:
-                        messages.error(request, 'Error al actualizar el videojuego.')
-                else:
-                    messages.error(request, 'La fecha de lanzamiento es requerida.')
-                    return render(request, 'crudApp/CrudVideojuego/DeleteV.html', {'form': form, 'usuario_id': usuario_id})
-            else:
-                messages.error(request, 'El formulario no es válido. Verifique los datos ingresados.')
-
-        return render(request, 'crudApp/CrudVideojuego/DeleteV.html', {
-            'usuario': usuario,
-            'videojuegos': videojuegos,
-            'form': form,
-            'usuario_id': usuario_id,
-            'videojuego_id': videojuego_id
-        })
-
-    except Exception as e:
-        messages.error(request, f'Ocurrió un error: {e}')
-        return render(request, 'crudApp/CrudVideojuego/DeleteV.html')
-
-
-
-
-
-def search_videojuegos(request):
-    videojuegos = []
-    if request.method == 'GET' and 'usuario_id' in request.GET:
-        params = {
-            'id': request.GET.get('id'),
-            'nombre': request.GET.get('nombre'),
-            'precio': request.GET.get('precio'),
-            'multijugador': request.GET.get('multijugador'),
-        }
-        try:
-            response = requests.get(f"http://localhost:8080/usuario/{request.GET['usuario_id']}", params=params)
-            if response.status_code == 200:
-                videojuegos = response.json()
-            else:
-                messages.error(request, "No se encontraron videojuegos con los criterios proporcionados.")
-        except requests.RequestException as e:
-            messages.error(request, str(e))
-
-    return render(request, 'crudApp/CrudVideojuego/Search.html', {
-        'videojuegos': videojuegos
-    })
-
 def delete_usuario(request):
-    if request.method == 'DELETE':
-        form = UsuarioForm(request.DELETE)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'El usuario se ha eliminado con exito')
-            return redirect('delete_usuario')
-    else:
-        form = UsuarioForm()
+    form = UsuarioForm(request.POST or None)
+
+    if request.method == 'POST':
+        if 'confirm_delete' in request.POST:
+            usuario_id = request.POST.get('id')
+            if form.is_valid() and usuario_id:
+                response = requests.delete(f'http://localhost:8080/usuarios/{usuario_id}')
+                if response.status_code == 200:
+                    messages.success(request, 'El usuario se ha eliminado con éxito.')
+                    return redirect('delete_usuario')
+                else:
+                    print(f'Error al eliminar usuario: {response.status_code}')
+                    messages.error(request, f'Error al eliminar el usuario en el backend de Spring Boot. '
+                                            f'Código de estado: {response.status_code}')
+            else:
+                print('El formulario no es válido o no se proporcionó ID de usuario.')
+        else:
+            print('La confirmación de eliminación no se recibió.')
+
+    # GET request: Búsqueda de usuario para mostrar en el formulario
+    elif request.method == 'GET':
+        usuario_id = request.GET.get('id')
+        if usuario_id:
+            response = requests.get(f'http://localhost:8080/usuarios/{usuario_id}')
+
+            if response.status_code == 200:
+                usuario_data = response.json()
+                form = UsuarioForm(initial=usuario_data)
+            else:
+                messages.error(request, f'Error al obtener los datos del usuario del backend de Spring Boot. '
+                                        f'Código de estado: {response.status_code}')
+                print(f'Error al buscar usuario: {response.status_code}')
+
+    # Independientemente del método, siempre renderizamos la misma plantilla.
     return render(request, 'crudApp/CrudUsuario/DeleteU.html', {'form': form})
+
 
 def view_usuario(request):
     response = requests.get('http://localhost:8080/usuarios')
@@ -283,18 +300,6 @@ def view_usuario(request):
         return render(request, 'crudApp/CrudUsuario/ReadU.html', {'usuarios': usuarios})
     else:
         return HttpResponse('Error al obtener los usuarios: ' + str(response.status_code))
-
-
-import requests
-from django.http import JsonResponse
-
-import requests
-from django.shortcuts import render
-from django.http import JsonResponse
-
-import requests
-from django.http import JsonResponse
-
 
 def update_usuario(request):
     try:
@@ -307,7 +312,7 @@ def update_usuario(request):
 
                 print("Datos enviados a Spring Boot:", form_data)
                 # Eliminamos el id del formulario para que no se incluya al actualizar
-                del form_data['id']
+                #del form_data['id']
                 response = requests.put(f'http://localhost:8080/usuarios/{usuario_id}', json=form_data,
                                         headers={'Content-Type': 'application/json'})
                 if response.status_code == 200:
@@ -322,7 +327,8 @@ def update_usuario(request):
             if usuario_id:
                 print(f'Búsqueda de usuario con ID: {usuario_id}')
                 # Realizar una solicitud GET al backend de Spring Boot para obtener los datos del usuario
-                response = requests.get(f'http://localhost:8080/usuarios', params={'id': usuario_id})
+                response = requests.get(f'http://localhost:8080/usuarios/{usuario_id}')
+
 
                 if response.status_code == 200:
                     # Si la solicitud fue exitosa, obtener los datos del usuario del cuerpo de la respuesta JSON
@@ -344,45 +350,31 @@ def update_usuario(request):
     form = UsuarioForm()
     return render(request, 'crudApp/CrudUsuario/UpdateU.html', {'form': form})
 
-import requests
-from django.shortcuts import render
-
 def buscar_usuario(request):
-    usuarios = []
-    base_url = "http://localhost:8080/usuarios"
+        usuarios = []
+        base_url = "http://localhost:8080/usuarios"
 
-    if request.GET:
-        params = request.GET.dict()
-        if 'esPremium' in params:
-            params['esPremium'] = True if params['esPremium'].lower() == 'si' else False
+        if request.GET:
+            params = request.GET.dict()
+            if 'esPremium' in params:
+                params['esPremium'] = True if params['esPremium'].lower() == 'si' else False
 
-        response = requests.get(base_url, params=params)
-        print("Respuesta de la API:", response.status_code, response.text)
+            response = requests.get(base_url, params=params)
+            print("Respuesta de la API:", response.status_code, response.text)
 
-        if response.status_code == 200:
-            # Aquí asumimos que la respuesta podría ser un solo objeto o una lista
-            data = response.json()
-            if isinstance(data, dict):  # Si es un diccionario, lo convertimos en una lista
-                usuarios = [data]
-            elif isinstance(data, list):
-                usuarios = data
+            if response.status_code == 200:
+                # Aquí asumimos que la respuesta podría ser un solo objeto o una lista
+                data = response.json()
+                if isinstance(data, dict):  # Si es un diccionario, lo convertimos en una lista
+                    usuarios = [data]
+                elif isinstance(data, list):
+                    usuarios = data
+                else:
+                    print("Formato de respuesta no reconocido")
             else:
-                print("Formato de respuesta no reconocido")
-        else:
-            print("Error en la solicitud API:", response.status_code, response.text)
+                print("Error en la solicitud API:", response.status_code, response.text)
 
-    return render(request, 'crudApp/search.html', {'usuarios': usuarios})
-
-    def AboutView(request):
-    # Puedes pasar los nombres de los integrantes como contexto si lo deseas
-        nombres_integrantes = [
-        "Nombre del Integrante 1",
-        "Nombre del Integrante 2",
-        "Nombre del Integrante 3",
-        "Nombre del Integrante 4"
-    ]
-    return render(request, 'crudApp/about.html', {'nombres_integrantes': nombres_integrantes})
-
+        return render(request, 'crudApp/search.html', {'usuarios': usuarios})
 
 def about_view(request):
     nombres_integrantes = [

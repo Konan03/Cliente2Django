@@ -1,13 +1,13 @@
 from django.urls import path
 from .views import home, UserView, VideogameView, delete_usuario, view_usuario, \
-    update_usuario, AboutView, buscar_usuario, add_usuario, \
+    update_usuario, buscar_usuario, add_usuario, \
     add_videojuego, read_videojuegos, update_videojuego, delete_videojuego, about_view, search_videojuegos
 
 urlpatterns = [
     path('', home, name='home'),  # La URL base para la página de inicio
     path('usuario/', UserView.as_view(), name='usuario'),  # Para la página general de usuario donde estarán los botones de CRUD
     path('videojuego/', VideogameView.as_view(), name='videojuego'),  # Para la sección de videojuegos
-    path('about/', AboutView.as_view(), name='about'),  # Para la página de "Acerca de"
+    path('about/', about_view, name='about'),  # Para la página de "Acerca de"
     path('search/', buscar_usuario, name='buscar_usuario'),
     path('usuario/crear/', add_usuario, name='add_usuario'),
     path('videojuego/add/', add_videojuego, name='add_videojuego'),
