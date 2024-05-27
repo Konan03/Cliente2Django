@@ -9,7 +9,7 @@ class UsuarioForm(forms.ModelForm):
         fields = ['id','nombre', 'estatura', 'fechaNacimiento', 'esPremium']  # Asumiendo que manejas videojuegos de otra manera
         widgets = {
             'fechaNacimiento': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
-            'esPremium': forms.CheckboxInput(),
+            'esPremium':  forms.Select(choices=[(True, 'Sí'), (False, 'No')]),
         }
 
     def __init__(self, *args, **kwargs):

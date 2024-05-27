@@ -294,12 +294,26 @@ def delete_usuario(request):
 
 
 def view_usuario(request):
-    response = requests.get('http://localhost:8080/usuarios')
-    if response.ok:
+    filtro_premium = request.GET.get('premium')
+    params = {}
+
+    if filtro_premium and filtro_premium != 'todos':
+        if filtro_premium == 'premium':
+            params['esPremium'] = True
+        elif filtro_premium == 'no_premium':
+            params['esPremium'] = False
+
+    response = requests.get('http://localhost:8080/usuarios', params=params)
+    if response.status_code == 200:
         usuarios = response.json()
-        return render(request, 'crudApp/CrudUsuario/ReadU.html', {'usuarios': usuarios})
     else:
-        return HttpResponse('Error al obtener los usuarios: ' + str(response.status_code))
+        messages.error(request, 'Error al obtener los usuarios: ' + str(response.status_code))
+        usuarios = []
+
+    return render(request, 'crudApp/CrudUsuario/ReadU.html', {
+        'usuarios': usuarios,
+        'filter_premium': filtro_premium
+    })
 
 def update_usuario(request):
     try:
